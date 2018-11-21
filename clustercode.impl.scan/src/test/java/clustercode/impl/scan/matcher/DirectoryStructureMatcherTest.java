@@ -5,8 +5,8 @@ import clustercode.api.domain.Profile;
 import clustercode.api.scan.ProfileParser;
 import clustercode.impl.scan.ProfileScanConfig;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-public class DirectoryStructureMatcherTest implements FileBasedUnitTest {
+public class DirectoryStructureMatcherTest {
 
     private DirectoryStructureMatcher subject;
     @Mock
@@ -31,11 +31,12 @@ public class DirectoryStructureMatcherTest implements FileBasedUnitTest {
     private Profile profile;
     private Path profileFolder;
 
-    @Before
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
-        profileFolder = getPath("profiles");
+        profileFolder = fs.getPath("profiles");
         when(config.profile_file_name()).thenReturn("profile");
         when(config.profile_file_name_extension()).thenReturn(".ffmpeg");
         when(config.profile_base_dir()).thenReturn(profileFolder);
@@ -44,40 +45,40 @@ public class DirectoryStructureMatcherTest implements FileBasedUnitTest {
 
     @Test
     public void apply_ShouldReturnProfile_ClosestToOriginalStructure() throws Exception {
-        Path media = createFile(getPath("0", "movies", "subdir", "movie.mp4"));
-        Path profileFile = createFile(profileFolder.resolve("0/movies/subdir/profile.ffmpeg"));
+        var media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
+        var profileFile = fs.createFile(profileFolder.resolve("0/movies/subdir/profile.ffmpeg"));
 
         when(candidate.getSourcePath()).thenReturn(media);
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
 
-        Optional<Profile> result = subject.apply(candidate);
+        var result = subject.apply(candidate);
 
         assertThat(result).hasValue(profile);
     }
 
     @Test
     public void apply_ShouldReturnProfile_FromParentDirectory() throws Exception {
-        Path media = createFile(getPath("0", "movies", "subdir", "movie.mp4"));
-        Path profileFile = createFile(profileFolder.resolve("0/movies/profile.ffmpeg"));
+        var media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
+        var profileFile = fs.createFile(profileFolder.resolve("0/movies/profile.ffmpeg"));
 
         when(candidate.getSourcePath()).thenReturn(media);
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
 
-        Optional<Profile> result = subject.apply(candidate);
+        var result = subject.apply(candidate);
 
         assertThat(result).hasValue(profile);
     }
 
     @Test
     public void apply_ShouldReturnProfile_FromGrandParentDirectory() throws Exception {
-        Path media = createFile(getPath("0", "movies", "subdir", "movie.mp4"));
-        Path profileFile = createFile(profileFolder.resolve("0/profile.ffmpeg"));
+        var media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
+        var profileFile = fs.createFile(profileFolder.resolve("0/profile.ffmpeg"));
 
         when(candidate.getSourcePath()).thenReturn(media);
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
         profile.setLocation(profileFile);
 
-        Optional<Profile> result = subject.apply(candidate);
+        var result = subject.apply(candidate);
 
         assertThat(result).hasValue(profile);
     }
@@ -85,12 +86,12 @@ public class DirectoryStructureMatcherTest implements FileBasedUnitTest {
 
     @Test
     public void apply_ShouldReturnEmptyProfile_IfNoFileMatches() throws Exception {
-        Path media = createFile(getPath("0", "movies", "subdir", "movie.mp4"));
+        var media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
 
         when(candidate.getSourcePath()).thenReturn(media);
         when(parser.parseFile(any())).thenReturn(Optional.empty());
 
-        Optional<Profile> result = subject.apply(candidate);
+        var result = subject.apply(candidate);
 
         assertThat(result).isEmpty();
     }
@@ -98,14 +99,14 @@ public class DirectoryStructureMatcherTest implements FileBasedUnitTest {
     @Test
     @SuppressWarnings("unchecked")
     public void apply_ShouldReturnParentProfile_IfSiblingFileCouldNotBeRead() throws Exception {
-        Path media = createFile(getPath("0", "movies", "subdir", "movie.mp4"));
-        createFile(profileFolder.resolve("0/movies/subdir/profile.ffmpeg"));
-        createFile(profileFolder.resolve("0/movies/profile.ffmpeg"));
+        var media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
+        fs.createFile(profileFolder.resolve("0/movies/subdir/profile.ffmpeg"));
+        fs.createFile(profileFolder.resolve("0/movies/profile.ffmpeg"));
 
         when(candidate.getSourcePath()).thenReturn(media);
         when(parser.parseFile(any())).thenReturn(Optional.empty(), Optional.of(profile));
 
-        Optional<Profile> result = subject.apply(candidate);
+        var result = subject.apply(candidate);
 
         assertThat(result).hasValue(profile);
     }

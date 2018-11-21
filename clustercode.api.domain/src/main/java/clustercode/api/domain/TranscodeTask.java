@@ -1,11 +1,9 @@
 package clustercode.api.domain;
 
-import lombok.*;
-import clustercode.api.domain.Media;
-import clustercode.api.domain.Profile;
-
-import java.util.List;
-import java.util.function.Consumer;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder

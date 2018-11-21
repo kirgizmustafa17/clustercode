@@ -3,7 +3,7 @@ package clustercode.test.util;
 import java.time.*;
 import java.util.Locale;
 
-public interface ClockBasedUnitTest {
+public class ClockBasedUnitTest {
 
     /**
      * Gets a fixed clock which uses the given instant and the system default zone.
@@ -11,7 +11,7 @@ public interface ClockBasedUnitTest {
      * @param time the instant.
      * @return a fixed clock which always returns the given instant.
      */
-    default Clock getFixedClock(Instant time) {
+    public Clock getFixedClock(Instant time) {
         return Clock.fixed(time, ZoneId.systemDefault());
     }
 
@@ -27,7 +27,7 @@ public interface ClockBasedUnitTest {
      * @return a fixed clock which always returns the given time.
      * @throws java.time.format.DateTimeParseException if the time cannot be parsed using the given parameters.
      */
-    default Clock getFixedClock(int year, int month, int day, int hour, int minute, int second) {
+    public Clock getFixedClock(int year, int month, int day, int hour, int minute, int second) {
         return getFixedClock(year, month, day, hour, minute, second, ZoneOffset.UTC);
     }
 
@@ -42,7 +42,7 @@ public interface ClockBasedUnitTest {
      * @return a fixed clock which always returns the given time.
      * @throws java.time.format.DateTimeParseException if the time cannot be parsed using the given parameters.
      */
-    default Clock getFixedClock(int year, int month, int day, int hour, int minute) {
+    public Clock getFixedClock(int year, int month, int day, int hour, int minute) {
         return getFixedClock(year, month, day, hour, minute, 0, ZoneOffset.UTC);
     }
 
@@ -54,7 +54,7 @@ public interface ClockBasedUnitTest {
      * @return a fixed clock which always returns the given time.
      * @throws java.time.format.DateTimeParseException if the time cannot be parsed using the given parameters.
      */
-    default Clock getFixedClock(int hour, int minute) {
+    public Clock getFixedClock(int hour, int minute) {
         return getFixedClock(2017, 1, 31, hour, minute, 0, ZoneOffset.UTC);
     }
 
@@ -70,7 +70,7 @@ public interface ClockBasedUnitTest {
      * @param zone   the zone id.
      * @return a fixed clock which always returns the given time.
      */
-    default Clock getFixedClock(int year, int month, int day, int hour, int minute, int second, ZoneOffset zone) {
+    public Clock getFixedClock(int year, int month, int day, int hour, int minute, int second, ZoneOffset zone) {
         return Clock.fixed(getLocalTime(year, month, day, hour, minute, second).toInstant(zone), zone);
     }
 
@@ -86,7 +86,7 @@ public interface ClockBasedUnitTest {
      * @return the time.
      * @throws java.time.format.DateTimeParseException if the instant cannot be created from the given parameters.
      */
-    default LocalDateTime getLocalTime(int year, int month, int day, int hour, int minute, int second) {
+    public LocalDateTime getLocalTime(int year, int month, int day, int hour, int minute, int second) {
         return LocalDateTime.parse(new StringBuilder()
                 .append(year).append('-').append(preZero(month)).append('-').append(preZero(day))
                 .append('T')
@@ -105,7 +105,7 @@ public interface ClockBasedUnitTest {
      * @return the time.
      * @throws java.time.format.DateTimeParseException if the instant cannot be created from the given parameters.
      */
-    default LocalDateTime getLocalTime(int year, int month, int day, int hour, int minute) {
+    public LocalDateTime getLocalTime(int year, int month, int day, int hour, int minute) {
         return getLocalTime(year, month, day, hour, minute, 0);
     }
 
@@ -118,7 +118,7 @@ public interface ClockBasedUnitTest {
      * @return the time.
      * @throws java.time.format.DateTimeParseException if the instant cannot be created from the given parameters.
      */
-    default LocalDateTime getLocalTime(int year, int month, int day) {
+    public LocalDateTime getLocalTime(int year, int month, int day) {
         return getLocalTime(year, month, day, 0, 0, 0);
     }
 
@@ -130,7 +130,7 @@ public interface ClockBasedUnitTest {
      * @return the instant.
      * @throws java.time.format.DateTimeParseException if the instant cannot be created from the given parameters.
      */
-    default LocalDateTime getLocalTime(int hour, int minute) {
+    public LocalDateTime getLocalTime(int hour, int minute) {
         return getLocalTime(2017, 1, 31, hour, minute);
     }
 
@@ -141,7 +141,7 @@ public interface ClockBasedUnitTest {
      * @param number
      * @return the string representation.
      */
-    default String preZero(int number) {
+    public String preZero(int number) {
         return preZero(number, 2);
     }
 
@@ -153,7 +153,7 @@ public interface ClockBasedUnitTest {
      * @param length
      * @return the string representation.
      */
-    default String preZero(int number, int length) {
+    public String preZero(int number, int length) {
         return String.format(Locale.ENGLISH, "%0".concat(Integer.toString(length)).concat("d"), number);
     }
 }

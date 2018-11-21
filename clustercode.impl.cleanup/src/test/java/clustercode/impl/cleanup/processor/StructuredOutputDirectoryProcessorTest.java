@@ -6,8 +6,8 @@ import clustercode.api.event.messages.TranscodeFinishedEvent;
 import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.test.util.ClockBasedUnitTest;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -17,8 +17,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-public class StructuredOutputDirectoryProcessorTest
-        implements FileBasedUnitTest, ClockBasedUnitTest {
+public class StructuredOutputDirectoryProcessorTest {
 
     private StructuredOutputDirectoryProcessor subject;
 
@@ -33,32 +32,34 @@ public class StructuredOutputDirectoryProcessorTest
 
     private Path outputDir;
 
-    @Before
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+    private ClockBasedUnitTest clock = new ClockBasedUnitTest();
+
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
         context.setTranscodeFinishedEvent(transcodeFinishedEvent);
         transcodeFinishedEvent.setMedia(media);
 
-        outputDir = getPath("output");
+        outputDir = fs.getPath("output");
         when(settings.base_output_dir()).thenReturn(outputDir);
         when(transcodeFinishedEvent.isSuccessful()).thenReturn(true);
 
-        subject = new StructuredOutputDirectoryProcessor(settings, getFixedClock(8, 20));
+        subject = new StructuredOutputDirectoryProcessor(settings, clock.getFixedClock(8, 20));
     }
 
     @Test
     public void processStep_ShouldMoveFileToNewDestination() throws Exception {
 
-        Path source = createFile(getPath("0", "subdir", "file.ext"));
-        Path temp = createFile(getPath("tmp", "file.ext"));
+        var source = fs.createFile(fs.getPath("0", "subdir", "file.ext"));
+        var temp = fs.createFile(fs.getPath("tmp", "file.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
         media.setSourcePath(source);
 
-        CleanupContext result = subject.processStep(context);
+        var result = subject.processStep(context);
 
-        Path expected = getPath("output", "subdir", "file.ext");
+        var expected = fs.getPath("output", "subdir", "file.ext");
         assertThat(result.getOutputPath()).isEqualTo(expected);
         assertThat(expected).exists();
     }
@@ -66,15 +67,15 @@ public class StructuredOutputDirectoryProcessorTest
     @Test
     public void processStep_ShouldMoveFileToNewDestination_WithOtherFileExtension() throws Exception {
 
-        Path source = createFile(getPath("0", "subdir", "file.mp4"));
-        Path temp = createFile(getPath("tmp", "file.mkv"));
+        var source = fs.createFile(fs.getPath("0", "subdir", "file.mp4"));
+        var temp = fs.createFile(fs.getPath("tmp", "file.mkv"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
         media.setSourcePath(source);
 
-        CleanupContext result = subject.processStep(context);
+        var result = subject.processStep(context);
 
-        Path expected = getPath("output", "subdir", "file.mkv");
+        var expected = fs.getPath("output", "subdir", "file.mkv");
         assertThat(result.getOutputPath()).isEqualTo(expected);
         assertThat(expected).exists();
     }
@@ -82,38 +83,38 @@ public class StructuredOutputDirectoryProcessorTest
     @Test
     public void processStep_ShouldMoveFileWithTimestamp_IfFileExists() throws Exception {
 
-        Path source = createFile(getPath("0", "subdir", "file.ext"));
-        createFile(getPath("output", "subdir", "file.ext"));
-        Path temp = createFile(getPath("tmp", "file.ext"));
+        var source = fs.createFile(fs.getPath("0", "subdir", "file.ext"));
+        fs.createFile(fs.getPath("output", "subdir", "file.ext"));
+        var temp = fs.createFile(fs.getPath("tmp", "file.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
         media.setSourcePath(source);
 
-        CleanupContext result = subject.processStep(context);
+        var result = subject.processStep(context);
 
-        Path expected = getPath("output", "subdir", "file.2017-01-31.08-20-00.ext");
+        var expected = fs.getPath("output", "subdir", "file.2017-01-31.08-20-00.ext");
         assertThat(result.getOutputPath()).isEqualTo(expected);
         assertThat(expected).exists();
     }
 
     @Test
     public void createOutputDirectoryTree_ShouldRecreateDirectoryTree_WithSubdirectories() throws Exception {
-        Path source = getPath("0", "subdir1", "subdir2", "file.ext");
-        Path expected = outputDir.resolve("subdir1").resolve("subdir2").resolve("file.ext");
+        var source = fs.getPath("0", "subdir1", "subdir2", "file.ext");
+        var expected = outputDir.resolve("subdir1").resolve("subdir2").resolve("file.ext");
 
-        Path result = subject.createOutputDirectoryTree(source);
+        var result = subject.createOutputDirectoryTree(source);
 
         assertThat(result)
-                .isEqualTo(expected)
-                .hasParentRaw(expected.getParent());
+            .isEqualTo(expected)
+            .hasParentRaw(expected.getParent());
     }
 
     @Test
     public void createOutputDirectoryTree_ShouldRecreateDirectoryTree_WithoutSubdirs() throws Exception {
-        Path source = getPath("0", "file.ext");
-        Path expected = outputDir.resolve("file.ext");
+        var source = fs.getPath("0", "file.ext");
+        var expected = outputDir.resolve("file.ext");
 
-        Path result = subject.createOutputDirectoryTree(source);
+        var result = subject.createOutputDirectoryTree(source);
 
         assertThat(result).isEqualTo(expected);
     }

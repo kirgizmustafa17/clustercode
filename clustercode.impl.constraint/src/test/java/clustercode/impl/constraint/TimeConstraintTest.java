@@ -3,8 +3,8 @@ package clustercode.impl.constraint;
 import clustercode.api.domain.Media;
 import clustercode.impl.util.InvalidConfigurationException;
 import clustercode.test.util.ClockBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
-public class TimeConstraintTest implements ClockBasedUnitTest {
+public class TimeConstraintTest {
 
     private TimeConstraint subject;
 
@@ -23,7 +23,9 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
     @Mock
     private ConstraintConfig config;
 
-    @Before
+    private ClockBasedUnitTest clock = new ClockBasedUnitTest();
+
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
     }
@@ -32,7 +34,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
     public void accept_ShouldReturnTrue_IfCurrentTimeIsBetweenBeginAndStop() throws Exception {
         when(config.time_begin()).thenReturn("13:00");
         when(config.time_stop()).thenReturn("14:00");
-        subject = new TimeConstraint(config, getFixedClock(13, 30));
+        subject = new TimeConstraint(config, clock.getFixedClock(13, 30));
 
         assertThat(subject.accept(candidate)).isTrue();
     }
@@ -41,7 +43,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
     public void accept_ShouldReturnFalse_IfCurrentTimeIsBeforeBegin() throws Exception {
         when(config.time_begin()).thenReturn("13:00");
         when(config.time_stop()).thenReturn("14:00");
-        subject = new TimeConstraint(config, getFixedClock(12, 30));
+        subject = new TimeConstraint(config, clock.getFixedClock(12, 30));
 
         assertThat(subject.accept(candidate)).isFalse();
     }
@@ -50,7 +52,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
     public void accept_ShouldReturnFalse_IfCurrentTimeIsAfterStop() throws Exception {
         when(config.time_begin()).thenReturn("13:00");
         when(config.time_stop()).thenReturn("14:00");
-        subject = new TimeConstraint(config, getFixedClock(14, 30));
+        subject = new TimeConstraint(config, clock.getFixedClock(14, 30));
 
         assertThat(subject.accept(candidate)).isFalse();
     }
@@ -59,7 +61,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
     public void accept_ShouldReturnTrue_IfCurrentTimeIsAfterBegin_AndStopIsBeforeBegin() throws Exception {
         when(config.time_begin()).thenReturn("13:00");
         when(config.time_stop()).thenReturn("12:00");
-        subject = new TimeConstraint(config, getFixedClock(14, 30));
+        subject = new TimeConstraint(config, clock.getFixedClock(14, 30));
 
         assertThat(subject.accept(candidate)).isTrue();
     }
@@ -68,7 +70,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
     public void accept_ShouldReturnFalse_IfCurrentTimeIsBeforeBegin_AndStopIsBeforeBegin() throws Exception {
         when(config.time_begin()).thenReturn("13:00");
         when(config.time_stop()).thenReturn("11:00");
-        subject = new TimeConstraint(config, getFixedClock(12, 30));
+        subject = new TimeConstraint(config, clock.getFixedClock(12, 30));
 
         assertThat(subject.accept(candidate)).isFalse();
     }
@@ -78,7 +80,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
         when(config.time_begin()).thenReturn("12:00");
         when(config.time_stop()).thenReturn("12:00");
         assertThatExceptionOfType(InvalidConfigurationException.class).isThrownBy(() ->
-                subject = new TimeConstraint(config, getFixedClock(12, 30)));
+            subject = new TimeConstraint(config, clock.getFixedClock(12, 30)));
     }
 
     @Test
@@ -86,7 +88,7 @@ public class TimeConstraintTest implements ClockBasedUnitTest {
         when(config.time_begin()).thenReturn("-1");
         when(config.time_stop()).thenReturn("-1");
         assertThatExceptionOfType(InvalidConfigurationException.class).isThrownBy(() ->
-                subject = new TimeConstraint(config, Clock.systemDefaultZone()));
+            subject = new TimeConstraint(config, Clock.systemDefaultZone()));
     }
 
 }

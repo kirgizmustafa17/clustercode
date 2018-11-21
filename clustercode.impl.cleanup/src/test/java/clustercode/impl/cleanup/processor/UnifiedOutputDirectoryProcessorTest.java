@@ -7,8 +7,8 @@ import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.test.util.ClockBasedUnitTest;
 import clustercode.test.util.FileBasedUnitTest;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -17,8 +17,7 @@ import java.nio.file.Path;
 
 import static org.mockito.Mockito.when;
 
-public class UnifiedOutputDirectoryProcessorTest
-        implements FileBasedUnitTest, ClockBasedUnitTest {
+public class UnifiedOutputDirectoryProcessorTest {
 
     private UnifiedOutputDirectoryProcessor subject;
 
@@ -32,30 +31,31 @@ public class UnifiedOutputDirectoryProcessorTest
     private Media media;
 
     private Path outputDir;
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+    private ClockBasedUnitTest clock = new ClockBasedUnitTest();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
-        outputDir = getPath("output");
+        outputDir = fs.getPath("output");
         context.setTranscodeFinishedEvent(transcodeFinishedEvent);
         transcodeFinishedEvent.setMedia(media);
         when(cleanupConfig.base_output_dir()).thenReturn(outputDir);
         when(transcodeFinishedEvent.isSuccessful()).thenReturn(true);
 
-        subject = new UnifiedOutputDirectoryProcessor(cleanupConfig, getFixedClock(8, 20));
+        subject = new UnifiedOutputDirectoryProcessor(cleanupConfig, clock.getFixedClock(8, 20));
     }
 
     @Test
     public void processStep_ShouldMoveRootFileToOutputDir() throws Exception {
 
-        Path temp = createFile(getPath("0", "video.ext"));
+        Path temp = fs.createFile(fs.getPath("0", "video.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
 
         CleanupContext result = subject.processStep(context);
 
-        Path expected = getPath("output", "video.ext");
+        Path expected = fs.getPath("output", "video.ext");
 
         Assertions.assertThat(result.getOutputPath())
                 .isEqualTo(expected)
@@ -65,13 +65,13 @@ public class UnifiedOutputDirectoryProcessorTest
     @Test
     public void processStep_ShouldMoveSubdirFileToOutputDir() throws Exception {
 
-        Path temp = createFile(getPath("0", "subdir", "video.ext"));
+        Path temp = fs.createFile(fs.getPath("0", "subdir", "video.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
 
         CleanupContext result = subject.processStep(context);
 
-        Path expected = getPath("output", "video.ext");
+        Path expected = fs.getPath("output", "video.ext");
 
         Assertions.assertThat(result.getOutputPath())
                 .isEqualTo(expected)
@@ -80,14 +80,14 @@ public class UnifiedOutputDirectoryProcessorTest
 
     @Test
     public void processStep_ShouldMoveSubdirFileToOutputDir_AndAddTimestampToFile_IfFileExists() throws Exception {
-        Path temp = createFile(getPath("0", "subdir", "video.ext"));
-        createFile(outputDir.resolve("video.ext"));
+        Path temp = fs.createFile(fs.getPath("0", "subdir", "video.ext"));
+        fs.createFile(outputDir.resolve("video.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
 
         CleanupContext result = subject.processStep(context);
 
-        Path expected = getPath("output", "video.2017-01-31.08-20-00.ext");
+        Path expected = fs.getPath("output", "video.2017-01-31.08-20-00.ext");
 
         Assertions.assertThat(result.getOutputPath())
                 .isEqualTo(expected)

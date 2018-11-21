@@ -5,8 +5,8 @@ import clustercode.api.domain.Profile;
 import clustercode.api.scan.ProfileParser;
 import clustercode.impl.scan.ProfileScanConfig;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-public class CompanionProfileMatcherTest implements FileBasedUnitTest {
+public class CompanionProfileMatcherTest {
 
     @Mock
     private ProfileScanConfig config;
@@ -30,11 +30,11 @@ public class CompanionProfileMatcherTest implements FileBasedUnitTest {
     private Profile profile;
 
     private CompanionProfileMatcher subject;
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
         subject = new CompanionProfileMatcher(config, profileParser);
         when(config.profile_file_name_extension()).thenReturn(".ffmpeg");
         when(profileParser.parseFile(any())).thenReturn(Optional.of(profile));
@@ -42,8 +42,8 @@ public class CompanionProfileMatcherTest implements FileBasedUnitTest {
 
     @Test
     public void apply_ShouldReturnProfile_IfFileFoundAndReadable() throws Exception {
-        Path media = createParentDirOf(getPath("input", "movie.mp4"));
-        createFile(getPath("input", "movie.mp4.ffmpeg"));
+        Path media = fs.createParentDirOf(fs.getPath("input", "movie.mp4"));
+        fs.createFile(fs.getPath("input", "movie.mp4.ffmpeg"));
 
         when(candidate.getSourcePath()).thenReturn(media);
 
@@ -54,7 +54,7 @@ public class CompanionProfileMatcherTest implements FileBasedUnitTest {
 
     @Test
     public void apply_ShouldReturnEmpty_IfFileNotFound() throws Exception {
-        Path media = createParentDirOf(getPath("input", "movie.mp4"));
+        Path media = fs.createParentDirOf(fs.getPath("input", "movie.mp4"));
 
         when(candidate.getSourcePath()).thenReturn(media);
 
@@ -63,8 +63,8 @@ public class CompanionProfileMatcherTest implements FileBasedUnitTest {
 
     @Test
     public void apply_ShouldReturnEmpty_IfFileNotReadable() throws Exception {
-        Path media = createParentDirOf(getPath("input", "movie.mkv"));
-        Path file = createFile(getPath("input", "movie.mkv.ffmpeg"));
+        Path media = fs.createParentDirOf(fs.getPath("input", "movie.mkv"));
+        Path file = fs.createFile(fs.getPath("input", "movie.mkv.ffmpeg"));
 
         when(candidate.getSourcePath()).thenReturn(media);
 

@@ -3,8 +3,8 @@ package clustercode.impl.constraint;
 import clustercode.api.domain.Media;
 import clustercode.impl.util.InvalidConfigurationException;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
-public class FileSizeConstraintTest implements FileBasedUnitTest {
+public class FileSizeConstraintTest {
 
     private FileSizeConstraint subject;
     private Path inputDir;
@@ -28,11 +28,12 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
     @Spy
     private Media media;
 
-    @Before
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
-        when(config.base_input_dir()).thenReturn(getPath("input"));
+        when(config.base_input_dir()).thenReturn(fs.getPath("input"));
         inputDir = config.base_input_dir();
         Files.createDirectory(inputDir);
     }
@@ -51,7 +52,7 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
         when(config.min_file_size()).thenReturn(10L);
         initSubject();
 
-        Path file = inputDir.resolve("movie.mp4");
+        var file = inputDir.resolve("movie.mp4");
         writeBytes(12, file);
 
         media.setSourcePath(inputDir.relativize(file));
@@ -65,7 +66,7 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
         when(config.min_file_size()).thenReturn(0L);
         initSubject();
 
-        Path file = inputDir.resolve("movie.mp4");
+        var file = inputDir.resolve("movie.mp4");
         writeBytes(12, file);
 
         media.setSourcePath(inputDir.relativize(file));
@@ -79,7 +80,7 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
         when(config.min_file_size()).thenReturn(0L);
         initSubject();
 
-        Path file = inputDir.resolve("movie.mp4");
+        var file = inputDir.resolve("movie.mp4");
         writeBytes(12, file);
 
         media.setSourcePath(inputDir.relativize(file));
@@ -93,7 +94,7 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
         when(config.min_file_size()).thenReturn(10L);
         initSubject();
 
-        Path file = inputDir.resolve("movie.mp4");
+        var file = inputDir.resolve("movie.mp4");
         writeBytes(8, file);
 
         media.setSourcePath(inputDir.relativize(file));
@@ -107,7 +108,7 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
         when(config.min_file_size()).thenReturn(1000000L);
         initSubject();
 
-        Path file = inputDir.resolve("movie.mp4");
+        var file = inputDir.resolve("movie.mp4");
         writeBytes(101, file);
 
         media.setSourcePath(inputDir.relativize(file));
@@ -120,7 +121,7 @@ public class FileSizeConstraintTest implements FileBasedUnitTest {
         when(config.min_file_size()).thenReturn(10L);
         initSubject();
 
-        Path file = inputDir.resolve("movie.mp4");
+        var file = inputDir.resolve("movie.mp4");
 
         media.setSourcePath(inputDir.relativize(file));
         assertThat(subject.accept(media)).isFalse();

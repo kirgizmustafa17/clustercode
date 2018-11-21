@@ -1,46 +1,37 @@
 package clustercode.test.util;
 
 import com.google.common.jimfs.Jimfs;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Arrays;
 
 /**
  * Represents a test utility where unit testing using files is needed. Any path created using {@link #getPath(String,
  * String...)} is placed in-memory. The default backend of the file system is Google's Jimfs.
  */
-public interface FileBasedUnitTest {
+public class FileBasedUnitTest implements TestInstancePostProcessor {
 
     /**
      * The variable used by {@link FileBasedUnitTest} to access the (existing) file system.
      */
-    AtomicReference<FileSystem> _fs = new AtomicReference<>();
+    private FileSystem fs = Jimfs.newFileSystem();
 
     /**
-     * Setup the file system. This method initializes {@link #_fs} with a FileSystem, by default this is Jimfs.
-     */
-    default void setupFileSystem() {
-        _fs.set(Jimfs.newFileSystem());
-    }
-
-    /**
-     * Gets the path according to {@link FileSystem#getPath(String, String...)}. Be sure to call {@link
-     * #setupFileSystem()} first (e.g. in your @Before method).
+     * Gets the path according to {@link FileSystem#getPath(String, String...)}.
      *
      * @param first
      * @param more
      * @return the path.
-     * @throws RuntimeException if {@link #_fs} is not initialized.
+     * @throws RuntimeException if {@link #fs} is not initialized.
      */
-    default Path getPath(String first, String... more) {
-        if (_fs.get() == null) {
-            throw new RuntimeException(
-                    "File system is not initialized. Call setupFileSystem() in your @Before method.");
-        }
-        return _fs.get().getPath(first, more);
+    public Path getPath(String first, String... more) {
+        return fs.getPath(first, more);
     }
 
     /**
@@ -50,7 +41,7 @@ public interface FileBasedUnitTest {
      * @return path
      * @throws RuntimeException with the original IOException as cause if it failed.
      */
-    default Path createFile(Path path) {
+    public Path createFile(Path path) {
         try {
             Files.createFile(createParentDirOf(path));
             return path;
@@ -61,11 +52,12 @@ public interface FileBasedUnitTest {
 
     /**
      * Recursively creates the directories of the given path.
+     *
      * @param path
      * @return path
      * @throws RuntimeException with the original IOException as cause if it failed.
      */
-    default Path createDirectory(Path path) {
+    public Path createDirectory(Path path) {
         try {
             Files.createDirectories(path);
             return path;
@@ -81,7 +73,7 @@ public interface FileBasedUnitTest {
      * @return path
      * @throws RuntimeException with the original IOException as cause if it failed.
      */
-    default Path createParentDirOf(Path path) {
+    public Path createParentDirOf(Path path) {
         try {
             Files.createDirectories(path.getParent());
             return path;
@@ -90,4 +82,19 @@ public interface FileBasedUnitTest {
         }
     }
 
+    @Override
+    public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
+        Arrays.stream(testInstance.getClass().getDeclaredFields())
+              .filter(field -> field.getType() == getClass())
+              .forEach(field -> injectInstance(testInstance, field));
+    }
+
+    private void injectInstance(Object testInstance, Field field) {
+        field.setAccessible(true);
+        try {
+            field.set(testInstance, this);
+        } catch (IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

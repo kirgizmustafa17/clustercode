@@ -2,15 +2,15 @@ package clustercode.impl.constraint;
 
 import clustercode.api.domain.Media;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-public class FileNameConstraintTest implements FileBasedUnitTest {
+public class FileNameConstraintTest {
 
     private FileNameConstraint subject;
     @Mock
@@ -18,15 +18,16 @@ public class FileNameConstraintTest implements FileBasedUnitTest {
     @Mock
     private ConstraintConfig config;
 
-    @Before
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
     }
 
     @Test
     public void accept_ShouldReturnFalse_IfRegexOnlyMatchesPartially() throws Exception {
-        when(candidate.getSourcePath()).thenReturn(getPath("input", "movie.mp4"));
+        when(candidate.getSourcePath()).thenReturn(fs.getPath("input", "movie.mp4"));
         when(config.filename_regex()).thenReturn(".mp4");
 
         subject = new FileNameConstraint(config);
@@ -35,7 +36,7 @@ public class FileNameConstraintTest implements FileBasedUnitTest {
 
     @Test
     public void accept_ShouldReturnTrue_IfRegexMatches() throws Exception {
-        when(candidate.getSourcePath()).thenReturn(getPath("input", "movie.mp4"));
+        when(candidate.getSourcePath()).thenReturn(fs.getPath("input", "movie.mp4"));
         when(config.filename_regex()).thenReturn("^.*\\.mp4");
 
         subject = new FileNameConstraint(config);

@@ -5,8 +5,8 @@ import clustercode.api.domain.Media;
 import clustercode.api.event.messages.TranscodeFinishedEvent;
 import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-public class MarkSourceDirProcessorTest implements FileBasedUnitTest {
+public class MarkSourceDirProcessorTest {
 
     private MarkSourceDirProcessor subject;
     private Path inputDir;
@@ -31,13 +31,14 @@ public class MarkSourceDirProcessorTest implements FileBasedUnitTest {
     @Spy
     private TranscodeFinishedEvent transcodeFinishedEvent;
 
-    @Before
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
 
-        inputDir = getPath("input");
-        markDir = getPath("mark");
+        inputDir = fs.getPath("input");
+        markDir = fs.getPath("mark");
         context.setTranscodeFinishedEvent(transcodeFinishedEvent);
         transcodeFinishedEvent.setMedia(media);
         transcodeFinishedEvent.setSuccessful(true);
@@ -49,10 +50,10 @@ public class MarkSourceDirProcessorTest implements FileBasedUnitTest {
 
     @Test
     public void processStep_ShouldRecreateDirectoryStructure() throws Exception {
-        Path source = createFile(getPath("0", "video.ext"));
-        Path expected = markDir.resolve("0").resolve("video.ext.done");
+        var source = fs.createFile(fs.getPath("0", "video.ext"));
+        var expected = markDir.resolve("0").resolve("video.ext.done");
 
-        createFile(inputDir.resolve(source));
+        fs.createFile(inputDir.resolve(source));
         media.setSourcePath(source);
         subject.processStep(context);
 
@@ -61,10 +62,10 @@ public class MarkSourceDirProcessorTest implements FileBasedUnitTest {
 
     @Test
     public void processStep_ShouldRecreateDirectoryStructure_WithSubdirectories() throws Exception {
-        Path source = createFile(getPath("0","movies", "video.ext"));
-        Path expected = markDir.resolve("0").resolve("movies").resolve("video.ext.done");
+        var source = fs.createFile(fs.getPath("0", "movies", "video.ext"));
+        var expected = markDir.resolve("0").resolve("movies").resolve("video.ext.done");
 
-        createFile(inputDir.resolve(source));
+        fs.createFile(inputDir.resolve(source));
         media.setSourcePath(source);
         subject.processStep(context);
 
@@ -73,8 +74,8 @@ public class MarkSourceDirProcessorTest implements FileBasedUnitTest {
 
     @Test
     public void processStep_ShouldNotCreateDirectoryStructure_IfSourceDoesNotExist() throws Exception {
-        Path source = getPath("0","movies", "video.ext");
-        Path expected = markDir.resolve("0").resolve("movies").resolve("video.ext.done");
+        var source = fs.getPath("0", "movies", "video.ext");
+        var expected = markDir.resolve("0").resolve("movies").resolve("video.ext.done");
 
         media.setSourcePath(source);
         subject.processStep(context);

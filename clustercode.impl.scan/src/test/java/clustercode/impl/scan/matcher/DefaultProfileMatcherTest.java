@@ -5,8 +5,8 @@ import clustercode.api.domain.Profile;
 import clustercode.api.scan.ProfileParser;
 import clustercode.impl.scan.ProfileScanConfig;
 import clustercode.test.util.FileBasedUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-public class DefaultProfileMatcherTest implements FileBasedUnitTest {
+public class DefaultProfileMatcherTest {
 
 
     private DefaultProfileMatcher subject;
@@ -31,12 +31,12 @@ public class DefaultProfileMatcherTest implements FileBasedUnitTest {
     @Spy
     private Profile profile;
     private Path profileFolder;
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
-        profileFolder = getPath("profiles");
+        profileFolder = fs.getPath("profiles");
         when(config.profile_file_name_extension()).thenReturn(".ffmpeg");
         when(config.profile_base_dir()).thenReturn(profileFolder);
         when(config.default_profile_file_name()).thenReturn("default");
@@ -45,7 +45,7 @@ public class DefaultProfileMatcherTest implements FileBasedUnitTest {
 
     @Test
     public void apply_ShouldReturnDefaultProfile_IfFileFoundAndParsable() throws Exception {
-        Path profileFile = createFile(profileFolder.resolve("default.ffmpeg"));
+        var profileFile = fs.createFile(profileFolder.resolve("default.ffmpeg"));
 
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
         assertThat(subject.apply(candidate)).hasValue(profile);
