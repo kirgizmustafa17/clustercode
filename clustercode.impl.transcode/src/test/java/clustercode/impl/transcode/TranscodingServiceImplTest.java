@@ -4,6 +4,8 @@ import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
 import clustercode.api.domain.TranscodeTask;
 import clustercode.api.process.ExternalProcessService;
+import clustercode.api.process.ProcessConfiguration;
+import clustercode.api.process.RunningExternalProcess;
 import clustercode.test.util.CompletableUnitTest;
 import clustercode.test.util.FileBasedUnitTest;
 import io.reactivex.Single;
@@ -15,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,7 +69,7 @@ public class TranscodingServiceImplTest {
         var output = fs.getPath("tmp", "video.mp4");
         when(profile.getArguments()).thenReturn(Collections.singletonList(TranscodingServiceImpl.OUTPUT_PLACEHOLDER));
 
-        var result = subject.replaceOutput(
+        String result = subject.replaceOutput(
             TranscodingServiceImpl.OUTPUT_PLACEHOLDER,
             output
         );
@@ -79,7 +82,7 @@ public class TranscodingServiceImplTest {
         var input = fs.getPath("0", "video.mkv");
         when(profile.getArguments()).thenReturn(Arrays.asList());
 
-        var result = subject.replaceInput(
+        String result = subject.replaceInput(
             TranscodingServiceImpl.INPUT_PLACEHOLDER,
             input);
 
@@ -94,11 +97,11 @@ public class TranscodingServiceImplTest {
             subject.onTranscodeFinished()
                    .subscribe(result -> {
                        assertThat(result.isSuccessful()).isFalse();
-                       completable.completeOne();
+                       completeOne();
                    });
             subject.transcode(task);
 
-            completable.waitForCompletion();
+            waitForCompletion();
         });
     }
 
@@ -110,11 +113,11 @@ public class TranscodingServiceImplTest {
             subject.onTranscodeFinished()
                    .subscribe(result -> {
                        assertThat(result.isSuccessful()).isFalse();
-                       completable.completeOne();
+                       completeOne();
                    });
             subject.transcode(task);
 
-            completable.waitForCompletion();
+            waitForCompletion();
         });
     }
 
@@ -126,11 +129,11 @@ public class TranscodingServiceImplTest {
             subject.onTranscodeBegin()
                    .subscribe(result -> {
                        assertThat(result.getTask()).isEqualTo(task);
-                       completable.completeOne();
+                       completeOne();
                    });
             subject.transcode(task);
 
-            completable.waitForCompletion();
+            waitForCompletion();
         });
     }
 }

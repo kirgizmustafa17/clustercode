@@ -16,8 +16,6 @@ public class RxEventBusImplTest {
 
     private RxEventBusImpl subject;
 
-    private CompletableUnitTest completable = new CompletableUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         subject = new RxEventBusImpl();
@@ -31,11 +29,11 @@ public class RxEventBusImplTest {
 
             subject.listenFor(String.class, value -> {
                 assertThat(value).isEqualTo(message);
-                completable.completeOne();
+                completeOne();
             });
             subject.emit(message);
 
-            completable.waitForCompletion();
+            waitForCompletion();
         });
     }
 
@@ -58,13 +56,13 @@ public class RxEventBusImplTest {
 
             subject.listenFor(String.class, value -> {
                 assertThat(value).isEqualTo(message);
-                completable.completeOne();
+                completeOne();
             });
 
             subject.emit(message);
             subject.emit(ignore);
 
-            completable.waitForCompletion();
+            waitForCompletion();
         });
     }
 

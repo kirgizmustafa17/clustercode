@@ -13,8 +13,6 @@ public class FileScannerImplTest {
 
     private FileScannerImpl subject;
 
-    private FileBasedUnitTest fs = new FileBasedUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         subject = new FileScannerImpl();

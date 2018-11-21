@@ -31,8 +31,6 @@ public class DirectoryStructureMatcherTest {
     private Profile profile;
     private Path profileFolder;
 
-    private FileBasedUnitTest fs = new FileBasedUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);

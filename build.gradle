@@ -27,7 +27,6 @@ ext {
     dep_inject = "javax.inject:javax.inject:1"
     dep_rabbitmq = "com.rabbitmq:amqp-client:5.5.0"
     dep_guice = "com.google.inject.extensions:guice-multibindings:${guiceVersion}"
-    dep_genson = "com.owlike:genson:1.4"
     dep_testcontainers_junit = "org.testcontainers:junit-jupiter:1.10.1"
     dep_testcontainers = "org.testcontainers:testcontainers:1.10.1"
 

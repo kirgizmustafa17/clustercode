@@ -26,7 +26,7 @@ public class ProfileParserImplTest {
 
     @Test
     public void parseFile_ShouldIgnoreEmptyLine() throws Exception {
-        Path testFile = fs.getPath("profile.ffmpeg");
+        Path testFile = getPath("profile.ffmpeg");
         String option1 = " line_without_space";
         String option2 = "line with space";
         Files.write(testFile, Arrays.asList(option1, "", option2));

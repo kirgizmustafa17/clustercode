@@ -31,8 +31,6 @@ public class MarkSourceDirProcessorTest {
     @Spy
     private TranscodeFinishedEvent transcodeFinishedEvent;
 
-    private FileBasedUnitTest fs = new FileBasedUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);

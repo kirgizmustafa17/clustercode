@@ -28,8 +28,6 @@ public class FileSizeConstraintTest {
     @Spy
     private Media media;
 
-    private FileBasedUnitTest fs = new FileBasedUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);

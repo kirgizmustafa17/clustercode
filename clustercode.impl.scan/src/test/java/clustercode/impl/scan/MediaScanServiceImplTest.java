@@ -26,8 +26,6 @@ public class MediaScanServiceImplTest {
 
     private Map<Path, List<Media>> candidates;
 
-    private FileBasedUnitTest fs = new FileBasedUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);

@@ -23,8 +23,6 @@ public class TimeConstraintTest {
     @Mock
     private ConstraintConfig config;
 
-    private ClockBasedUnitTest clock = new ClockBasedUnitTest();
-
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
