@@ -1,0 +1,13 @@
+version '2.0.0'
+
+dependencies {
+    compile project(":${proj_api_cluster}")
+    compile project(":${proj_api_event}")
+    compile project(":${proj_api_transcode}")
+    compile project(":${proj_api_domain}")
+    compile "${dep_rxjava}"
+    compile "${dep_inject}"
+    compile "${dep_rabbitmq}"
+    compile "${dep_genson}"
+    testCompile project(":${proj_test_util}").sourceSets.test.output
+}
