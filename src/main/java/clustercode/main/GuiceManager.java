@@ -28,7 +28,6 @@ public class GuiceManager {
 
         modules.add(new GlobalModule());
         modules.add(new CleanupModule(loader));
-        modules.add(new ClusterModule(loader));
         modules.add(new ConstraintModule(loader));
         modules.add(new ProcessModule());
         modules.add(new ScanModule(loader));
