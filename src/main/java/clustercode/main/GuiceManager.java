@@ -33,7 +33,6 @@ public class GuiceManager {
         modules.add(new ProcessModule());
         modules.add(new ScanModule(loader));
         modules.add(new TranscodeModule(loader));
-        modules.add(new RestApiModule(loader));
 
     }
 
