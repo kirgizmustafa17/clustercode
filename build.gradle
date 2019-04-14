@@ -21,6 +21,7 @@ ext {
     jacksonVersion = "2.9.+"
     ver_junit = "5.3.1"
 
+    dep_rs "javax.ws.rs:javax.ws.rs-api:2.1.1"
     dep_owner = "org.aeonbits.owner:owner:1.0.10"
     dep_rxjava = "io.reactivex.rxjava2:rxjava:2.1.+"
     dep_jgroups = "org.jgroups:jgroups:4.0.13.Final"
@@ -60,61 +61,46 @@ allprojects {
     }
 }
 
-subprojects {
-    group = 'clustercode'
-    version = '1.0'
+targetCompatibility = 1.11
+sourceCompatibility = 1.11
 
-    targetCompatibility = 1.10
-    sourceCompatibility = 1.10
+apply plugin: "java"
 
-    apply plugin: "java"
-
-    repositories {
-        mavenCentral()
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
-
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-        }
-    }
-
-    dependencies {
-        compileOnly "org.projectlombok:lombok:1.18.+"
-        testCompileOnly "org.projectlombok:lombok:1.18.+"
-
-        // logging
-        compile "org.slf4j:slf4j-ext:1.7.+"
-        runtime "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-        runtime "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-        runtime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
-
-        // testing
-        testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
-        testRuntime "org.junit.jupiter:junit-jupiter-engine:${ver_junit}"
-        testCompile "org.junit.jupiter:junit-jupiter-api:${ver_junit}"
-        testCompile "org.mockito:mockito-all:2.0.+"
-        testCompile "com.google.jimfs:jimfs:1.+"
-        testCompile "org.assertj:assertj-core:3.8.0"
-
-        //testCompile project(":clustercode.test.util").sourceSets.test.output
-    }
-
-    test {
-        systemProperty 'log4j.configurationFile', '../clustercode.main/src/test/resources/log4j2-debug.xml'
-    }
-
 }
 
 dependencies {
-    compile project(":${proj_main}")
+    compileOnly "org.projectlombok:lombok:1.18.+"
+    testCompileOnly "org.projectlombok:lombok:1.18.+"
+
+    compile "${dep_rs}"
+    compile "${dep_guice}"
+    compile "${dep_rabbitmq}"
+    compile "${dep_inject}"
+    compile "${dep_owner}"
+    compile "${dep_rxjava}"
+
+    // logging
+    compile "org.slf4j:slf4j-ext:1.7.+"
+    runtime "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    runtime "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    runtime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+
+    // testing
+    testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:${ver_junit}"
+    testCompile "org.junit.jupiter:junit-jupiter-api:${ver_junit}"
+    testCompile "org.mockito:mockito-all:2.0.+"
+    testCompile "com.google.jimfs:jimfs:1.+"
+    testCompile "org.assertj:assertj-core:3.8.0"
+
 }
 
 
 shadowJar {
-    dependencies {
-        exclude(project(":${proj_test_util}"))
-    }
     manifest {
         attributes "Main-Class": "clustercode.main.Startup", "Implementation-Version": version
     }
@@ -154,8 +140,6 @@ task resolveDependencies {
     }
 }
 
-task githubRelease()
-
 fullBuild.dependsOn test
 
 //check.dependsOn integrationTest
@@ -165,4 +149,3 @@ fullBuild.dependsOn test
     reportsDir file("${project.buildDir}/reports/jacoco")
     toolVersion "0.7.6.201602180812"
 }*/
-
