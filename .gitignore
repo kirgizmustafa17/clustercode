@@ -20,17 +20,8 @@ out/
 
 # intellij
 *.iws
-.idea/dataSources.ids
-.idea/dataSources.xml
-.idea/sqlDataSources.xml
-.idea/dynamic.xml
 desktop.ini
-.idea/*.iml
-
 .idea/*
-!.idea/codeStyleSettings.xml
-!.idea/codeStyles
-!.idea/runConfigurations
 
 # project
 /config/

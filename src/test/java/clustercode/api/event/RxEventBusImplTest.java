@@ -101,17 +101,4 @@ public class RxEventBusImplTest {
         assertThat(result.get().getValue()).isEqualTo(2);
     }
 
-    private static class Message {
-
-        private int value;
-
-        void increment() {
-            this.value += 1;
-        }
-
-        int getValue() {
-            return value;
-        }
-    }
-
 }

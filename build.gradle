@@ -17,8 +17,7 @@ repositories {
 
 ext {
     guiceVersion = "4.2.2"
-    log4jVersion = "2.8.+"
-    jacksonVersion = "2.9.+"
+    log4jVersion = "2.11.+"
     ver_junit = "5.3.1"
 
     dep_vertx_web = "io.vertx:vertx-web:3.7.0"
@@ -45,8 +44,6 @@ allprojects {
 targetCompatibility = 1.11
 sourceCompatibility = 1.11
 
-apply plugin: "java"
-
 gradle.projectsEvaluated {
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
@@ -62,12 +59,13 @@ dependencies {
     compile "${dep_inject}"
     compile "${dep_owner}"
     compile "${dep_rxjava}"
+    compile "${dep_vertx_web}"
 
     // logging
-    compile "org.slf4j:slf4j-ext:1.7.+"
+    compile "org.slf4j:slf4j-ext:1.8.+"
     runtime "org.apache.logging.log4j:log4j-api:${log4jVersion}"
     runtime "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    runtime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    runtime "org.apache.logging.log4j:log4j-slf4j18-impl:${log4jVersion}"
 
     // testing
     testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
@@ -75,7 +73,7 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-api:${ver_junit}"
     testCompile "org.mockito:mockito-all:2.0.+"
     testCompile "com.google.jimfs:jimfs:1.+"
-    testCompile "org.assertj:assertj-core:3.8.0"
+    testCompile "org.assertj:assertj-core:3.11.1"
 
 }
 
@@ -104,7 +102,7 @@ task fullBuild(type: Jar) {
 task downloadDependenciesCustom(type: Exec) {
     configurations.testRuntime.files
     //commandLine "echo", "Downloaded all dependencies"
-    commandLine "print", "Downloaded all dependencies"
+    //commandLine "print", "Downloaded all dependencies"
 }
 
 task resolveDependencies {
@@ -121,11 +119,3 @@ task resolveDependencies {
 }
 
 fullBuild.dependsOn test
-
-//check.dependsOn integrationTest
-//integrationTest.mustRunAfter test
-
-/*jacoco {
-    reportsDir file("${project.buildDir}/reports/jacoco")
-    toolVersion "0.7.6.201602180812"
-}*/
