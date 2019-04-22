@@ -1,6 +1,6 @@
 package clustercode.impl.cleanup;
 
-import clustercode.api.config.converter.PathConverter;
+import clustercode.main.config.converter.PathConverter;
 import clustercode.impl.cleanup.processor.CleanupProcessors;
 import org.aeonbits.owner.Config;
 
@@ -31,14 +31,14 @@ public interface CleanupConfig extends Config {
     boolean overwrite_files();
 
     /**
-     * Gets the group id of the new owner of the output file(s).
+     * Gets the group jobId of the new owner of the output file(s).
      */
     @Key("CC_CLEANUP_CHOWN_GROUPID")
     @DefaultValue("0")
     int group_id();
 
     /**
-     * Gets the user id of the new owner of the output file(s).
+     * Gets the user jobId of the new owner of the output file(s).
      */
     @Key("CC_CLEANUP_CHOWN_USERID")
     @DefaultValue("0")

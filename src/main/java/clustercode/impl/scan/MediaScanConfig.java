@@ -1,6 +1,6 @@
 package clustercode.impl.scan;
 
-import clustercode.api.config.converter.PathConverter;
+import clustercode.main.config.converter.PathConverter;
 import org.aeonbits.owner.Config;
 
 import java.nio.file.Path;

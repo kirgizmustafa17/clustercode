@@ -28,7 +28,7 @@ desktop.ini
 /tmp/
 /input/
 /output/
-/nginx
+/src/main/generated/
 
 # NPM, Webpack
 node_modules/

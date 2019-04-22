@@ -78,7 +78,7 @@ public class MediaScanServiceImpl implements MediaScanService {
     Media buildMedia(Path priorityDir, Path file) {
         return Media.builder()
             .sourcePath(scanConfig.base_input_dir().relativize(file))
-            .priority(getNumberFromDir(priorityDir))
+            //.priority(getNumberFromDir(priorityDir))
             .build();
     }
 

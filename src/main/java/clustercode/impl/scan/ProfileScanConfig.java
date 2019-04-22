@@ -1,6 +1,6 @@
 package clustercode.impl.scan;
 
-import clustercode.api.config.converter.PathConverter;
+import clustercode.main.config.converter.PathConverter;
 import clustercode.impl.scan.matcher.ProfileMatchers;
 import org.aeonbits.owner.Config;
 
@@ -20,7 +20,7 @@ public interface ProfileScanConfig extends Config {
 
     /**
      * Gets the base name of the profile file. This method could be combined with {@link #profile_file_name_extension()}
-     * to create a file (e.g. "profile.ffmpeg").
+     * to createDefault a file (e.g. "profile.ffmpeg").
      *
      * @return the file name (e.g. "profile"), not null.
      */

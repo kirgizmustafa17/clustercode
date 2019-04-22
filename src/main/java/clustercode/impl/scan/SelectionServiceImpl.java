@@ -24,7 +24,7 @@ public class SelectionServiceImpl implements SelectionService {
     @Override
     public Optional<Media> selectMedia(List<Media> list) {
         return log.exit(list.stream()
-                .sorted(Comparator.comparingInt(Media::getPriority).reversed())
+                //.sorted(Comparator.comparingInt(Media::getPriority).reversed())
                 .filter(this::checkConstraints)
                 .findFirst());
     }

@@ -67,7 +67,7 @@ public class ClockBasedUnitTest {
      * @param hour   the hour of day (0..23)
      * @param minute the minute of hour (0..59)
      * @param second the second of minute (0..59)
-     * @param zone   the zone id.
+     * @param zone   the zone jobId.
      * @return a fixed clock which always returns the given time.
      */
     public Clock getFixedClock(int year, int month, int day, int hour, int minute, int second, ZoneOffset zone) {

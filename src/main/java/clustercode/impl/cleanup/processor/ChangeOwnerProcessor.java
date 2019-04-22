@@ -92,9 +92,9 @@ public class ChangeOwnerProcessor implements CleanupProcessor {
 
     private void checkId(int id) {
         if (0 > id) {
-            throw new InvalidConfigurationException("Cannot use a negative owner id");
+            throw new InvalidConfigurationException("Cannot use a negative owner jobId");
         } else if (id > 65534) {
-            throw new InvalidConfigurationException("Cannot use an owner id higher than 65534");
+            throw new InvalidConfigurationException("Cannot use an owner jobId higher than 65534");
         }
     }
 }

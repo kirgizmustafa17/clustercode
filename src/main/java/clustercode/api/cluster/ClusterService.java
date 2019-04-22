@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface ClusterService {
 
     /**
-     * Joins the cluster. If this Java process is the first member, it will create a new cluster. If a cluster cannot be
+     * Joins the cluster. If this Java process is the first member, it will createDefault a new cluster. If a cluster cannot be
      * created, it will downgrade to a single-node cluster.
      */
     void joinCluster();

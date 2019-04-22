@@ -103,7 +103,7 @@ public class FileUtil {
             log.debug("Creating directories for {}", target);
             Files.createDirectories(target);
         } catch (IOException e) {
-            log.error("Could not create directories for {}: {}", target, e);
+            log.error("Could not createDefault directories for {}: {}", target, e);
             throw new RuntimeException(e);
         }
     }

@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration name="clustercode">
     <Appenders>
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} - %logger{36} - [%t] - %msg%n"/>
+        <Console name="text" target="SYSTEM_OUT">
+            <PatternLayout>
+                <MarkerPatternSelector
+                        defaultPattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} - %logger{36} - [%t] - %msg %mdc%n">
+                    <PatternMatch key="NO_CONTEXT"
+                                  pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} - %logger{36} - [%t] - %msg%n"/>
+                </MarkerPatternSelector>
+            </PatternLayout>
+        </Console>
+        <Console name="json" target="SYSTEM_OUT">
+            <JsonLayout compact="true" complete="false" eventEol="true" properties="true" />
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
+        <Logger name="io.netty" level="${sys:io.netty.log.level:-error}">
+            <AppenderRef ref="${sys:log.format:-text}"/>
+        </Logger>
+        <Logger name="org.apache.http" level="${sys:org.apache.http.loo.level:-info}">
+            <AppenderRef ref="${sys:log.format:-text}"/>
+        </Logger>
+        <Root level="${sys:log.level:-info}" additivity="false">
+            <AppenderRef ref="${sys:log.format:-text}"/>
         </Root>
     </Loggers>
 </Configuration>

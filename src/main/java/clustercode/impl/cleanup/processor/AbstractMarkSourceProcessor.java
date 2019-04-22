@@ -35,7 +35,7 @@ public abstract class AbstractMarkSourceProcessor implements CleanupProcessor {
             log.debug("Creating file {}", marked);
             Files.createFile(marked);
         } catch (IOException e) {
-            log.error("Could not create file {}: {}", marked, e.getMessage());
+            log.error("Could not createDefault file {}: {}", marked, e.getMessage());
             log.warn("It may be possible that {} will be scheduled for transcoding again, as it could not be " +
                 "marked as done.", source);
         }

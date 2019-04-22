@@ -6,10 +6,9 @@ plugins {
 
 group "clustercode"
 version "2.0.0"
-/*
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-*/
+
+targetCompatibility = 1.11
+sourceCompatibility = 1.11
 
 repositories {
     mavenCentral()
@@ -17,19 +16,15 @@ repositories {
 
 ext {
     guiceVersion = "4.2.2"
-    log4jVersion = "2.11.+"
+    ver_log4j2 = "2.11.+"
     ver_junit = "5.3.1"
-
-    dep_vertx_web = "io.vertx:vertx-web:3.7.0"
-    dep_owner = "org.aeonbits.owner:owner:1.0.10"
-    dep_rxjava = "io.reactivex.rxjava2:rxjava:2.1.+"
-    dep_inject = "javax.inject:javax.inject:1"
-    dep_rabbitmq = "com.rabbitmq:amqp-client:5.5.0"
-    dep_guice = "com.google.inject.extensions:guice-multibindings:${guiceVersion}"
-    dep_testcontainers_junit = "org.testcontainers:junit-jupiter:1.10.1"
-    dep_testcontainers = "org.testcontainers:testcontainers:1.10.1"
+    ver_vertx = "3.7.0"
+    ver_micrometer = "1.1.+"
 
 }
+
+def generatedSrcPath = "${projectDir}/src/main/generated"
+def generatedSrcDir = file(generatedSrcPath)
 
 allprojects {
     idea {
@@ -37,12 +32,11 @@ allprojects {
             inheritOutputDirs = false
             outputDir = compileJava.destinationDir
             testOutputDir = compileTestJava.destinationDir
+            generatedSourceDirs += generatedSrcDir
         }
     }
 }
 
-targetCompatibility = 1.11
-sourceCompatibility = 1.11
 
 gradle.projectsEvaluated {
     tasks.withType(JavaCompile) {
@@ -54,21 +48,38 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.18.+"
     testCompileOnly "org.projectlombok:lombok:1.18.+"
 
-    compile "${dep_guice}"
-    compile "${dep_rabbitmq}"
-    compile "${dep_inject}"
-    compile "${dep_owner}"
-    compile "${dep_rxjava}"
-    compile "${dep_vertx_web}"
+    compile "com.google.inject.extensions:guice-multibindings:${guiceVersion}"
+    compile "javax.inject:javax.inject:1"
+    compile "org.aeonbits.owner:owner:1.0.10"
+
+    // Couchdb
+    compile "org.ektorp:org.ektorp:1.+"
+
+    // vertx
+    compileOnly "io.vertx:vertx-codegen:${ver_vertx}"
+    compile "io.vertx:vertx-codegen:${ver_vertx}:processor"
+    compile "io.vertx:vertx-service-proxy:${ver_vertx}"
+    compile "io.vertx:vertx-circuit-breaker:${ver_vertx}"
+    compile "io.vertx:vertx-web:${ver_vertx}"
+    compile "io.vertx:vertx-config:${ver_vertx}"
+    compile "io.vertx:vertx-config-yaml:${ver_vertx}"
+    compile "io.vertx:vertx-rx-java2:${ver_vertx}"
+    compile "io.vertx:vertx-health-check:${ver_vertx}"
+    compile "io.vertx:vertx-rabbitmq-client:${ver_vertx}"
+
+
+    // metrics
+    compile "io.vertx:vertx-micrometer-metrics:${ver_vertx}"
+    compile "io.micrometer:micrometer-registry-prometheus:${ver_micrometer}"
 
     // logging
     compile "org.slf4j:slf4j-ext:1.8.+"
-    runtime "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    runtime "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    runtime "org.apache.logging.log4j:log4j-slf4j18-impl:${log4jVersion}"
+    runtime "org.apache.logging.log4j:log4j-api:${ver_log4j2}"
+    runtime "org.apache.logging.log4j:log4j-core:${ver_log4j2}"
+    runtime "org.apache.logging.log4j:log4j-slf4j18-impl:${ver_log4j2}"
 
     // testing
-    testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:${ver_log4j2}"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:${ver_junit}"
     testCompile "org.junit.jupiter:junit-jupiter-api:${ver_junit}"
     testCompile "org.mockito:mockito-all:2.0.+"
@@ -77,6 +88,13 @@ dependencies {
 
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs += generatedSrcPath
+        }
+    }
+}
 
 shadowJar {
     manifest {
@@ -119,3 +137,23 @@ task resolveDependencies {
 }
 
 fullBuild.dependsOn test
+
+task generateVertxSources(type: JavaCompile, group: 'build', description: 'Generates the Vertx code') {
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.compileOnly
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor", "io.vertx.codegen.CodeGenProcessor", // vertx processor here
+            "-Acodegen.output=${generatedSrcDir.absolutePath}"
+    ]
+    destinationDir = generatedSrcDir
+}
+
+compileJava {
+    dependsOn(generateVertxSources)
+    // specify javac arguments
+}
+
+clean {
+    delete += generatedSrcDir
+}
