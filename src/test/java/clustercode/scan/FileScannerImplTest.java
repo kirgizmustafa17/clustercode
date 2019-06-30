@@ -1,4 +1,4 @@
-package clustercode.impl.scan;
+package clustercode.scan;
 
 import clustercode.test.util.FileBasedUnitTest;
 import org.junit.jupiter.api.BeforeEach;

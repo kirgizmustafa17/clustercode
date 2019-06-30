@@ -1,4 +1,4 @@
-package clustercode.api.scan;
+package clustercode.scan;
 
 import java.nio.file.Path;
 import java.util.List;

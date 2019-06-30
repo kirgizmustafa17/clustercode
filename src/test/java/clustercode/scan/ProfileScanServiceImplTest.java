@@ -1,9 +1,8 @@
-package clustercode.impl.scan;
+package clustercode.scan;
 
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
-import clustercode.api.scan.ProfileMatcher;
-import clustercode.impl.scan.matcher.ProfileMatchers;
+import clustercode.scan.matcher.ProfileMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;

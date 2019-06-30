@@ -1,31 +1,30 @@
-package clustercode.impl.scan.matcher;
+package clustercode.scan.matcher;
 
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
-import clustercode.api.scan.ProfileMatcher;
-import clustercode.api.scan.ProfileParser;
-import clustercode.impl.scan.ProfileScanConfig;
-import lombok.extern.slf4j.XSlf4j;
+import clustercode.scan.ProfileMatcher;
+import clustercode.scan.ProfileParser;
+import clustercode.scan.ProfileScanConfig;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
-import javax.inject.Inject;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Provides a matcher which looks in the recreated directory structure in the profiles folder based on the source file
+ * Provides a matcher which looks in the recreated directory structure in the profiles folder based on the path file
  * of the media. For a media file such as {@code 0/movies/subdir/movie.mp4} this matcher will look for a profile in
  * {@code /profiles/0/movies/subdir/}. If it did not find it or on error, the parent will be searched ({@code
  * /profiles/0/movies/}). This matcher stops at the root directory of the input dir, in the example case it is {@code
  * 0/}.
  */
-@XSlf4j
+@Slf4j
 public class DirectoryStructureMatcher implements ProfileMatcher {
 
     private final ProfileParser profileParser;
     private final ProfileScanConfig profileScanConfig;
 
-    @Inject
     DirectoryStructureMatcher(ProfileScanConfig profileScanConfig,
                               ProfileParser profileParser) {
         this.profileParser = profileParser;
@@ -34,30 +33,39 @@ public class DirectoryStructureMatcher implements ProfileMatcher {
 
     @Override
     public Optional<Profile> apply(Media candidate) {
-        log.entry(candidate);
-        Path mediaFileParent = candidate.getSourcePath().getParent();
+        Path mediaFileParent = candidate.getRelativePathWithPriority().get().getParent();
         Path sisterDir = profileScanConfig.profile_base_dir().resolve(mediaFileParent);
         Path profileFile = sisterDir.resolve(profileScanConfig.profile_file_name() + profileScanConfig
                 .profile_file_name_extension());
 
         Path rootDir = profileScanConfig.profile_base_dir().resolve(mediaFileParent.getName(0));
-        return log.exit(parseRecursive(profileFile, rootDir));
+        return parseRecursive(profileFile, rootDir);
     }
 
     private Optional<Profile> parseRecursive(Path file, Path root) {
         if (Files.exists(file)) {
-            Optional<Profile> result = profileParser.parseFile(file);
-            if (result.isPresent()) {
-                log.info("Found profile: {}", result.get().getLocation());
-                return result;
-            } else {
-                return parseRecursive(getProfileFileFromParentDirectory(file,
-                        profileScanConfig.profile_file_name() + profileScanConfig.profile_file_name_extension()),
-                        root);
+            try {
+                MDC.put("file", file.toString());
+                Optional<Profile> result = profileParser.parseFile(file);
+                if (result.isPresent()) {
+                    log.debug("Found profile: {}", result.get().getLocation());
+                    return result;
+                } else {
+                    return parseRecursive(getProfileFileFromParentDirectory(file,
+                            profileScanConfig.profile_file_name() + profileScanConfig.profile_file_name_extension()),
+                            root);
+                }
+            } finally {
+                MDC.remove("file");
             }
         } else if (file.getParent().equals(root)) {
-            log.debug("Did not find a suitable profile in any subdir of {}", root);
-            return Optional.empty();
+            try {
+                MDC.put("profile_dir", root.toString());
+                log.debug("Did not find a suitable profile in any subdirectory.");
+                return Optional.empty();
+            } finally {
+                MDC.remove("profile_dir");
+            }
         } else {
             return parseRecursive(getProfileFileFromParentDirectory(file,
                     profileScanConfig.profile_file_name() + profileScanConfig.profile_file_name_extension()),

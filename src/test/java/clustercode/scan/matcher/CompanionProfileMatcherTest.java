@@ -1,9 +1,9 @@
-package clustercode.impl.scan.matcher;
+package clustercode.scan.matcher;
 
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
-import clustercode.api.scan.ProfileParser;
-import clustercode.impl.scan.ProfileScanConfig;
+import clustercode.scan.ProfileParser;
+import clustercode.scan.ProfileScanConfig;
 import clustercode.test.util.FileBasedUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,7 @@ public class CompanionProfileMatcherTest {
         Path media = fs.createParentDirOf(fs.getPath("input", "movie.mp4"));
         fs.createFile(fs.getPath("input", "movie.mp4.ffmpeg"));
 
-        when(candidate.getSourcePath()).thenReturn(media);
+        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
 
         Profile result = subject.apply(candidate).get();
 
@@ -56,7 +56,7 @@ public class CompanionProfileMatcherTest {
     public void apply_ShouldReturnEmpty_IfFileNotFound() throws Exception {
         Path media = fs.createParentDirOf(fs.getPath("input", "movie.mp4"));
 
-        when(candidate.getSourcePath()).thenReturn(media);
+        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
 
         assertThat(subject.apply(candidate)).isEmpty();
     }
@@ -66,7 +66,7 @@ public class CompanionProfileMatcherTest {
         Path media = fs.createParentDirOf(fs.getPath("input", "movie.mkv"));
         Path file = fs.createFile(fs.getPath("input", "movie.mkv.ffmpeg"));
 
-        when(candidate.getSourcePath()).thenReturn(media);
+        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
 
         when(profileParser.parseFile(file)).thenReturn(Optional.empty());
 

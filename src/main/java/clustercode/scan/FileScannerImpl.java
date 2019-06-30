@@ -1,8 +1,7 @@
-package clustercode.impl.scan;
+package clustercode.scan;
 
-import clustercode.api.scan.FileScanner;
-import lombok.extern.slf4j.XSlf4j;
-import org.slf4j.ext.XLogger;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -13,9 +12,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@XSlf4j
-public class FileScannerImpl
-    implements FileScanner {
+@Slf4j
+public class FileScannerImpl implements FileScanner {
 
     private boolean isDirEnabled;
     private Optional<Path> searchDir = Optional.empty();
@@ -23,7 +21,6 @@ public class FileScannerImpl
     private Optional<String> skipExtension = Optional.empty();
     private int depth;
     private Optional<Path> skipDirectory = Optional.empty();
-
 
     @Override
     public FileScanner searchIn(Path dir) {
@@ -74,7 +71,7 @@ public class FileScannerImpl
     @Override
     public Optional<List<Path>> scan() {
         try {
-            return Optional.of(createStreamWithLogLevel(XLogger.Level.WARN).collect(Collectors.toList()));
+            return Optional.of(createStream().collect(Collectors.toList()));
         } catch (RuntimeException ex) {
             return Optional.empty();
         }
@@ -82,29 +79,32 @@ public class FileScannerImpl
 
     @Override
     public Stream<Path> stream() {
-        return createStreamWithLogLevel(XLogger.Level.ERROR);
+        return createStream();
     }
 
     @Override
     public Stream<Path> streamAndIgnoreErrors() {
         try {
-            return createStreamWithLogLevel(XLogger.Level.WARN);
+            return createStream();
         } catch (RuntimeException e) {
             return Stream.empty();
         }
     }
 
-    private Stream<Path> createStreamWithLogLevel(XLogger.Level logLevel) {
+    private Stream<Path> createStream() {
         try {
+            MDC.put("dir", searchDir.map(Path::toString).orElse(""));
+            log.debug("Scanning for directories");
             return Files
-                .walk(searchDir.get(), this.depth, FileVisitOption.FOLLOW_LINKS)
-                .filter(path -> !path.equals(searchDir.get()))
-                .filter(this::includeFileOrDirectory)
-                .filter(this::hasAllowedExtension)
-                .filter(this::hasNotCompanionFile);
+                    .walk(searchDir.get(), this.depth, FileVisitOption.FOLLOW_LINKS)
+                    .filter(path -> !path.equals(searchDir.get()))
+                    .filter(this::includeFileOrDirectory)
+                    .filter(this::hasAllowedExtension)
+                    .filter(this::hasNotCompanionFile);
         } catch (IOException e) {
-           // log.catching(logLevel, e);
             throw new RuntimeException(e);
+        } finally {
+            MDC.clear();
         }
     }
 
@@ -117,8 +117,8 @@ public class FileScannerImpl
      */
     boolean hasAllowedExtension(Path path) {
         return allowedExtensions.map(strings -> strings
-            .stream()
-            .anyMatch(extension -> path.getFileName().toString().endsWith(extension))
+                .stream()
+                .anyMatch(extension -> path.getFileName().toString().endsWith(extension))
         ).orElse(true);
     }
 

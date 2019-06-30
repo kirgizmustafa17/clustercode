@@ -1,9 +1,9 @@
-package clustercode.impl.scan.matcher;
+package clustercode.scan.matcher;
 
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
-import clustercode.api.scan.ProfileParser;
-import clustercode.impl.scan.ProfileScanConfig;
+import clustercode.scan.ProfileParser;
+import clustercode.scan.ProfileScanConfig;
 import clustercode.test.util.FileBasedUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

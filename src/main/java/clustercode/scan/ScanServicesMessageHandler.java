@@ -4,7 +4,6 @@ import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
 import clustercode.api.event.RxEventBus;
 import clustercode.api.event.messages.*;
-import clustercode.api.scan.MediaScanService;
 import clustercode.api.scan.ProfileScanService;
 import clustercode.api.scan.SelectionService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,14 +14,14 @@ import java.util.Optional;
 @Slf4j
 class ScanServicesMessageHandler {
 
-    private final MediaScanService scanService;
+    private final MediaScanServiceImpl scanService;
     private final SelectionService selectionService;
     private final ProfileScanService profileScanService;
     private final RxEventBus eventBus;
 
     @Inject
     ScanServicesMessageHandler(
-            MediaScanService scanService,
+            MediaScanServiceImpl scanService,
             SelectionService selectionService,
             ProfileScanService profileScanService,
             RxEventBus eventBus

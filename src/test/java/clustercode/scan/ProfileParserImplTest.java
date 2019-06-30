@@ -1,4 +1,4 @@
-package clustercode.impl.scan;
+package clustercode.scan;
 
 import clustercode.api.domain.Profile;
 import clustercode.test.util.FileBasedUnitTest;

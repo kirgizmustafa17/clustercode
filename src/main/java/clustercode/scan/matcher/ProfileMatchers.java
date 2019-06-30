@@ -1,4 +1,4 @@
-package clustercode.impl.scan.matcher;
+package clustercode.scan.matcher;
 
 public enum ProfileMatchers {
 

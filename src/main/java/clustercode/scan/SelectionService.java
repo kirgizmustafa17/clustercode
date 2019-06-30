@@ -1,4 +1,4 @@
-package clustercode.api.scan;
+package clustercode.scan;
 
 import clustercode.api.domain.Media;
 

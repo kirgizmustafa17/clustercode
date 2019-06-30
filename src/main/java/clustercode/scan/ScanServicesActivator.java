@@ -1,7 +1,5 @@
-package clustercode.impl.scan;
+package clustercode.scan;
 
-import clustercode.api.domain.Activator;
-import clustercode.api.domain.ActivatorContext;
 import clustercode.api.event.RxEventBus;
 import clustercode.api.event.messages.*;
 import io.reactivex.disposables.Disposable;

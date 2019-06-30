@@ -1,37 +1,34 @@
-package clustercode.impl.scan;
+package clustercode.scan;
 
 import clustercode.api.domain.Profile;
-import clustercode.api.scan.ProfileParser;
-import lombok.extern.slf4j.XSlf4j;
-import org.slf4j.ext.XLogger;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-@XSlf4j
+@Slf4j
 public class ProfileParserImpl implements ProfileParser {
 
     public static final Pattern FORMAT_PATTERN = Pattern.compile("%\\{([a-zA-Z]+)=(.*)\\}");
 
     @Override
     public Optional<Profile> parseFile(Path path) {
-        log.entry(path);
         try {
+            log.debug("Parsing profile.");
             List<String> lines = Files
                     .lines(path)
                     .map(String::trim)
                     .filter(this::isNotCommentLine)
                     .collect(Collectors.toList());
-            return log.exit(Optional.of(
+            return Optional.of(
                     Profile.builder()
                             .arguments(lines.stream()
                                     .filter(this::isNotFieldLine)
@@ -40,10 +37,13 @@ public class ProfileParserImpl implements ProfileParser {
                                     .filter(this::isFieldLine)
                                     .collect(Collectors.toMap(this::extractKey, this::extractValue)))
                             .location(path)
-                            .build()));
+                            .build());
         } catch (IOException e) {
-            log.catching(XLogger.Level.WARN, e);
-            return log.exit(Optional.empty());
+            MDC.put("error", e.getMessage());
+            log.warn("Could not parse file.");
+            return Optional.empty();
+        } finally {
+            MDC.remove("error");
         }
     }
 
