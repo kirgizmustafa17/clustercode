@@ -1,7 +1,10 @@
-package clustercode.impl.constraint;
+package clustercode.scheduling.constraint;
 
 import clustercode.api.domain.Media;
 import clustercode.impl.util.InvalidConfigurationException;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.time.Clock;
@@ -14,8 +17,8 @@ import java.time.format.DateTimeParseException;
  * time is outside of the configurable 24h time window. The 'begin' and 'stop' strings are expected in the "HH:mm"
  * format (0-23).
  */
-public class TimeConstraint
-        extends AbstractConstraint {
+@Slf4j
+public class TimeConstraint extends AbstractConstraint {
 
     private final Clock clock;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -23,17 +26,16 @@ public class TimeConstraint
     private LocalTime begin;
 
     @Inject
-    protected TimeConstraint(ConstraintConfig config,
+    protected TimeConstraint(String timeBegin,
+                             String timeStop,
                              Clock clock) {
         this.clock = clock;
-        String begin = config.time_begin();
-        String stop = config.time_stop();
         try {
-            this.begin = LocalTime.parse(begin, formatter);
-            this.stop = LocalTime.parse(stop, formatter);
+            this.begin = LocalTime.parse(timeBegin, formatter);
+            this.stop = LocalTime.parse(timeStop, formatter);
         } catch (DateTimeParseException ex) {
             throw new InvalidConfigurationException("The time format is HH:mm. You specified: begin({}), stop({})", ex,
-                    begin, stop);
+                    timeBegin, timeStop);
         }
         checkConfiguration();
     }
@@ -57,8 +59,14 @@ public class TimeConstraint
     }
 
     protected boolean logAndReturn(boolean result, LocalTime now) {
-        return logAndReturnResult(result, "Time window {} (begin: {}, stop {})",
-                formatter.format(now), formatter.format(begin), formatter.format(stop));
+        MDC.put("begin", formatter.format(begin));
+        MDC.put("stop", formatter.format(stop));
+        MDC.put("now", formatter.format(now));
+        return logAndReturnResult(result);
     }
 
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
 }

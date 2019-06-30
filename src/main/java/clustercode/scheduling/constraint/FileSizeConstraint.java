@@ -1,9 +1,11 @@
-package clustercode.impl.constraint;
+package clustercode.scheduling.constraint;
 
 import clustercode.api.domain.Media;
 import clustercode.impl.util.InvalidConfigurationException;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,28 +16,23 @@ import java.text.DecimalFormat;
  * rejected. The limits are configurable. If the minimum or maximum size are 0 (zero), the check is disabled
  * (for its respective limit).
  */
+@Slf4j
 public class FileSizeConstraint
         extends AbstractConstraint {
 
     public static long BYTES = 1;
     public static long KIBI_BYTES = BYTES * 1024;
     public static long MEBI_BYTES = KIBI_BYTES * 1024;
+    private final Path baseInputDir;
     private final double minSize;
     private final double maxSize;
-    private final ConstraintConfig config;
     private final DecimalFormat formatter = new DecimalFormat("#.####");
 
-    @Inject
-    FileSizeConstraint(ConstraintConfig config) {
-        this(config, MEBI_BYTES);
-    }
-
-    protected FileSizeConstraint(ConstraintConfig config,
-                                 long factor) {
-        checkConfiguration(config.min_file_size(), config.max_file_size());
-        this.config = config;
-        this.minSize = config.min_file_size() * factor;
-        this.maxSize = config.max_file_size() * factor;
+    FileSizeConstraint(Path baseInputDir, double minSize, double maxSize) {
+        checkConfiguration(minSize, maxSize);
+        this.baseInputDir = baseInputDir;
+        this.minSize = minSize * MEBI_BYTES;
+        this.maxSize = maxSize * MEBI_BYTES;
     }
 
     private void checkConfiguration(double minSize, double maxSize) {
@@ -55,37 +52,43 @@ public class FileSizeConstraint
 
     @Override
     public boolean accept(Media candidate) {
-        Path file = config.base_input_dir().resolve(candidate.getSourcePath());
+        var file = candidate.getSubstitutedPath(baseInputDir).get();
+        MDC.put("min_MB_required", formatNumber(minSize / MEBI_BYTES));
+        MDC.put("max_MB_allowed", formatNumber(maxSize / MEBI_BYTES));
+        MDC.put("file", file.toString());
         try {
             long size = Files.size(file);
+            MDC.put("source_MB", formatNumber(size / MEBI_BYTES));
             if (minSize > 0 && maxSize > 0) {
                 // file between max and min
-                return logAndReturn(size >= minSize && size <= maxSize, file, size);
+                return logAndReturnResult(size >= minSize && size <= maxSize);
             } else if (minSize <= 0) {
                 // size smaller than max, min disabled
-                return logAndReturn(size <= maxSize, file, size);
+                return logAndReturnResult(size <= maxSize);
             } else {
                 // size greater than min, max disabled
-                return logAndReturn(size >= minSize, file, size);
+                return logAndReturnResult(size >= minSize);
             }
         } catch (IOException e) {
-            log.warn("Could not determine file size of {}: {}. Declined file.", file, e.toString());
+            MDC.put("error", e.getMessage());
+            log.warn("Could not determine file size. Declined file.");
             return false;
+        } finally {
+            MDC.remove("min_MB_required");
+            MDC.remove("max_MB_allowed");
+            MDC.remove("file");
+            MDC.remove("source_MB");
+            MDC.remove("error");
         }
     }
 
-    protected String formatNumber(double number) {
+    private String formatNumber(double number) {
         return formatter.format(number);
     }
 
-    protected boolean logAndReturn(boolean result, Path file, long size) {
-        return logAndReturnResult(
-                result,
-                "file size of {} with {} MB (min: {}, max: {})",
-                file,
-                formatNumber(size / MEBI_BYTES),
-                formatNumber(minSize / MEBI_BYTES),
-                formatNumber(maxSize / MEBI_BYTES));
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }
 

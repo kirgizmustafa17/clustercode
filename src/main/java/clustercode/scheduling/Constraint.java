@@ -1,4 +1,6 @@
-package clustercode.api.domain;
+package clustercode.scheduling;
+
+import clustercode.api.domain.Media;
 
 /**
  * Represents a matcher with which a media candidate can be excluded or included for job scheduling. The implementing

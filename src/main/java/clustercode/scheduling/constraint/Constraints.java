@@ -1,4 +1,4 @@
-package clustercode.impl.constraint;
+package clustercode.scheduling.constraint;
 
 public enum Constraints {
 
@@ -6,7 +6,6 @@ public enum Constraints {
     NONE,
     FILE_NAME,
     TIME,
-    FILE_SIZE,
-    CLUSTER
+    FILE_SIZE
 
 }
