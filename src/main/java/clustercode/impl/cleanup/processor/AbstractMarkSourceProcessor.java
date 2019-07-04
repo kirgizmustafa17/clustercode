@@ -42,7 +42,6 @@ public abstract class AbstractMarkSourceProcessor implements CleanupProcessor {
     }
 
     protected Path getSourcePath(CleanupContext context) {
-        return cleanupConfig.base_input_dir().resolve(
-            context.getTranscodeFinishedEvent().getMedia().getSourcePath());
+        return context.getTranscodeFinishedEvent().getMedia().getSubstitutedPath(cleanupConfig.base_input_dir()).get();
     }
 }

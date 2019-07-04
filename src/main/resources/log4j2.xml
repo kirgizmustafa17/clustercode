@@ -4,9 +4,9 @@
         <Console name="text" target="SYSTEM_OUT">
             <PatternLayout>
                 <MarkerPatternSelector
-                        defaultPattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} - %logger{36} - [%t] - %msg %mdc%n">
+                        defaultPattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} %-80logger{36} [%-30t] %msg %mdc%n">
                     <PatternMatch key="NO_CONTEXT"
-                                  pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} - %logger{36} - [%t] - %msg%n"/>
+                                  pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{White} %highlight{%-5level} %-80logger{36} [%-30t] %msg%n"/>
                 </MarkerPatternSelector>
             </PatternLayout>
         </Console>

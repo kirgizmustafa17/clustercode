@@ -26,31 +26,24 @@ public class JobDocument {
     @JsonProperty("_rev")
     private String revision;
 
+    @Builder.Default
     private List<Slice> slices = new ArrayList<>();
 
-    private List<OutputLine> preambleLines;
-
-    private List<OutputLine> postambleLines;
-
+    @JsonProperty("creation_time")
     private String creationTime;
+    @JsonProperty("completion_time")
     private String completionTime;
 
-    private Task task;
+    @Builder.Default
+    private List<Task> tasks = new ArrayList<>();
 
+    @JsonProperty("source_media")
     private Media media;
 
     @JsonIgnore
     public UUID getIdAsUuid() {
         if (this.id == null) return null;
         return UUID.fromString(this.id);
-    }
-
-    @JsonIgnore
-    public TaskAddedEvent getTaskAddedEvent() {
-        if (this.task == null) return null;
-        return TaskAddedEvent.builder()
-                .id(this.id)
-                .build();
     }
 
     @JsonIgnore

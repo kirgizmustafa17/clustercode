@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Provides a processor which marks the source file as done in a designated directory, so that it would not be
+ * Provides a processor which marks the path file as done in a designated directory, so that it would not be
  * rescheduled for transcoding during the next scan.
  */
 public class MarkSourceDirProcessor
@@ -58,7 +58,7 @@ public class MarkSourceDirProcessor
      * be created.
      * </p>
      *
-     * @param mediaSource the media source, which requires at least 1 parent element.
+     * @param mediaSource the media path, which requires at least 1 parent element.
      * @return the target as described.
      */
     Path createOutputDirectoryTree(Path mediaSource) {

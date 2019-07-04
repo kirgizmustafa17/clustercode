@@ -25,7 +25,7 @@ public class DirectoryStructureMatcher implements ProfileMatcher {
     private final ProfileParser profileParser;
     private final ProfileScanConfig profileScanConfig;
 
-    DirectoryStructureMatcher(ProfileScanConfig profileScanConfig,
+    public DirectoryStructureMatcher(ProfileScanConfig profileScanConfig,
                               ProfileParser profileParser) {
         this.profileParser = profileParser;
         this.profileScanConfig = profileScanConfig;
@@ -45,7 +45,7 @@ public class DirectoryStructureMatcher implements ProfileMatcher {
     private Optional<Profile> parseRecursive(Path file, Path root) {
         if (Files.exists(file)) {
             try {
-                MDC.put("file", file.toString());
+                MDC.put("file", profileScanConfig.profile_base_dir().relativize(file).toString());
                 Optional<Profile> result = profileParser.parseFile(file);
                 if (result.isPresent()) {
                     log.debug("Found profile: {}", result.get().getLocation());

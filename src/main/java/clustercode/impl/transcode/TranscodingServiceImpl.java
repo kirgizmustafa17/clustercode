@@ -48,7 +48,7 @@ public class TranscodingServiceImpl implements TranscodingService {
     @Synchronized
     private void doTranscode(Path tempFile, TranscodeTask task) {
 
-        var source = task.getMedia().getSourcePath();
+        var source = task.getMedia().getFullPath().get();
         log.info("Starting transcoding process: from {} to {}. This might take a while...", source, tempFile);
 
         publisher.onNext(TranscodeBeginEvent
@@ -101,7 +101,7 @@ public class TranscodingServiceImpl implements TranscodingService {
         var tempFile = transcoderConfig
             .temporary_dir()
             .resolve(FileUtil.getFileNameWithoutExtension(
-                task.getMedia().getSourcePath()) + getPropertyOrDefault(
+                task.getMedia().getFullPath().get()) + getPropertyOrDefault(
                 task.getProfile(), "FORMAT", transcoderConfig.default_video_extension())
             );
 

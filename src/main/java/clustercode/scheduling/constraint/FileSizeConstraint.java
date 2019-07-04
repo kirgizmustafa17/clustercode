@@ -52,7 +52,7 @@ public class FileSizeConstraint
 
     @Override
     public boolean accept(Media candidate) {
-        var file = candidate.getSubstitutedPath(baseInputDir).get();
+        var file = candidate.getFullPath().get();
         MDC.put("min_MB_required", formatNumber(minSize / MEBI_BYTES));
         MDC.put("max_MB_allowed", formatNumber(maxSize / MEBI_BYTES));
         MDC.put("file", file.toString());

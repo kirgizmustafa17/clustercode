@@ -31,6 +31,9 @@ public class MarkSourceDirProcessorTest {
     @Spy
     private TranscodeFinishedEvent transcodeFinishedEvent;
 
+    private FileBasedUnitTest fs = new FileBasedUnitTest() {
+    };
+
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -75,7 +78,6 @@ public class MarkSourceDirProcessorTest {
         var source = fs.getPath("0", "movies", "video.ext");
         var expected = markDir.resolve("0").resolve("movies").resolve("video.ext.done");
 
-        media.setSourcePath(source);
         subject.processStep(context);
 
         assertThat(expected).doesNotExist();

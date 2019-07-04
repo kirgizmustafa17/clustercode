@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -15,9 +16,14 @@ public class Slice {
 
     private int nr;
 
-    private int progress;
+    private double progress;
 
     private Instant begin;
 
     private Instant end;
+
+    private List<OutputLine> preambleLines;
+
+    private List<OutputLine> postambleLines;
+
 }

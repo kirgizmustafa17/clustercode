@@ -26,11 +26,11 @@ public abstract class AbstractOutputDirectoryProcessor implements CleanupProcess
     }
 
     /**
-     * Moves the source file to the target file. If the file exists and {@code overwrite} is enabled, then the file is
+     * Moves the path file to the target file. If the file exists and {@code overwrite} is enabled, then the file is
      * being overwritten. If the file exists and {@code overwrite} is disabled, then the target path is being modified
      * using {@link FileUtil#getTimestampedPath(Path, TemporalAccessor, DateTimeFormatter)}.
      *
-     * @param source    the source file.
+     * @param source    the path file.
      * @param target    the target outputfile.
      * @param overwrite the overwrite flag.
      * @return the final target path.

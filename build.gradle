@@ -18,7 +18,7 @@ ext {
     guiceVersion = "4.2.2"
     ver_log4j2 = "2.11.+"
     ver_junit = "5.3.1"
-    ver_vertx = "3.7.0"
+    ver_vertx = "3.7.1"
     ver_micrometer = "1.1.+"
 
 }
@@ -62,7 +62,6 @@ dependencies {
     compile "io.vertx:vertx-circuit-breaker:${ver_vertx}"
     compile "io.vertx:vertx-web:${ver_vertx}"
     compile "io.vertx:vertx-config:${ver_vertx}"
-    compile "io.vertx:vertx-config-yaml:${ver_vertx}"
     compile "io.vertx:vertx-rx-java2:${ver_vertx}"
     compile "io.vertx:vertx-health-check:${ver_vertx}"
     compile "io.vertx:vertx-rabbitmq-client:${ver_vertx}"
@@ -79,7 +78,7 @@ dependencies {
     runtime "org.apache.logging.log4j:log4j-slf4j18-impl:${ver_log4j2}"
 
     // testing
-    testRuntime "org.apache.logging.log4j:log4j-slf4j-impl:${ver_log4j2}"
+    testRuntime "org.apache.logging.log4j:log4j-slf4j18-impl:${ver_log4j2}"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:${ver_junit}"
     testCompile "org.junit.jupiter:junit-jupiter-api:${ver_junit}"
     testCompile "org.mockito:mockito-all:2.0.+"
@@ -98,7 +97,7 @@ sourceSets {
 
 shadowJar {
     manifest {
-        attributes "Main-Class": "clustercode.main.Startup", "Implementation-Version": version
+        attributes "Main-Class": "clustercode.main.Startup", "Implementation-Version": version, "Multi-Release": true
     }
     baseName = "clustercode"
     classifier = null

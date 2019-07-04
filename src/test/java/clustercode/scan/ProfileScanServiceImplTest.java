@@ -9,9 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -31,13 +29,13 @@ public class ProfileScanServiceImplTest {
     @Spy
     private Profile profile;
 
-    private Map<ProfileMatchers, ProfileMatcher> matchers = new HashMap<>();
+    private List<ProfileMatcher> matchers = new ArrayList<>();
 
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        matchers.put(ProfileMatchers.DIRECTORY_STRUCTURE, matcher1);
-        matchers.put(ProfileMatchers.DEFAULT, matcher2);
+        matchers.add(matcher1);
+        matchers.add(matcher2);
         subject = new ProfileScanServiceImpl(matchers);
     }
 

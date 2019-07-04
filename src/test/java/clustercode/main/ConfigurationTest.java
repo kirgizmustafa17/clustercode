@@ -28,4 +28,13 @@ class ConfigurationTest {
         Assertions.assertThat(result.getString("api.http.test")).isNull();
     }
 
+
+    @Test
+    void createFromEnvMap_ShoulTreatListAsString() {
+        var map = new HashMap<String, String>();
+        map.put("CC_CONSTRAINT_ACTIVE", "arg1,arg2");
+
+        var result = Configuration.createFromEnvMap(map);
+        Assertions.assertThat(result.getString("constraint.active")).isEqualTo("arg1,arg2");
+    }
 }

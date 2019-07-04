@@ -5,6 +5,7 @@ import clustercode.main.config.AnnotatedCli;
 import clustercode.main.config.Configuration;
 import clustercode.main.config.converter.LogFormat;
 import clustercode.main.config.converter.LogLevel;
+import clustercode.scan.ScanVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
@@ -21,14 +22,19 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.jar.Manifest;
 
 public class Startup {
 
     private static XLogger log;
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("log4j2.debug", "debug");
         var cli = CLI.create(AnnotatedCli.class);
         var flags = new AnnotatedCli();
         try {
@@ -37,7 +43,7 @@ public class Startup {
             if (!parsed.isValid() || flags.isHelp()) {
                 printUsageAndExit(cli);
             }
-
+            System.setProperty("log4j2.configurationFile", "src/main/resources/log4j2.xml");
             System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory");
 
             // override default log properties from ENV if given.
@@ -63,46 +69,50 @@ public class Startup {
 
         MDC.put("dir", new File("").getAbsolutePath());
         log.debug("Using working dir.");
-        MDC.clear();
+        MDC.remove("dir");
 
         ConfigRetriever retriever = ConfigRetriever.create(Vertx.vertx(),
-                new ConfigRetrieverOptions()
-                        .addStore(new ConfigStoreOptions()
-                                .setType("json")
-                                .setConfig(Configuration.createFromDefault())
-                        )
-                        .addStore(new ConfigStoreOptions()
-                                .setType("json")
-                                .setConfig(Configuration.createFromEnvMap(System.getenv())))
-                        .addStore(new ConfigStoreOptions()
-                                .setType("json")
-                                .setConfig(Configuration.createFromFlags(flags)))
+            new ConfigRetrieverOptions()
+                .addStore(new ConfigStoreOptions()
+                    .setType("json")
+                    .setFormat("json")
+                    .setConfig(Configuration.createFromDefault())
+                )
+                .addStore(new ConfigStoreOptions()
+                    .setType("json")
+                    .setFormat("json")
+                    .setConfig(Configuration.createFromEnvMap(System.getenv())))
+                .addStore(new ConfigStoreOptions()
+                    .setType("json")
+                    .setFormat("json")
+                    .setConfig(Configuration.createFromFlags(flags)))
         );
 
         retriever.getConfig(json -> {
             var config = json.result();
             //  configV.close();
             var v = Vertx.vertx(new VertxOptions().setMetricsOptions(
-                    new MicrometerMetricsOptions()
-                            .setPrometheusOptions(new VertxPrometheusOptions()
-                                    .setEnabled(config.getBoolean(Configuration.prometheus_enabled.key()))
-                                    .setPublishQuantiles(config.getBoolean(Configuration.prometheus_publishQuantiles.key()))
-                            )
-                            .setEnabled(true)
+                new MicrometerMetricsOptions()
+                    .setPrometheusOptions(new VertxPrometheusOptions()
+                        .setEnabled(config.getBoolean(Configuration.prometheus_enabled.key()))
+                        .setPublishQuantiles(config.getBoolean(Configuration.prometheus_publishQuantiles.key()))
                     )
+                    .setEnabled(true)
+                )
             );
             v.exceptionHandler(ex -> log.error("Unhandled Vertx exception:", ex));
             v.deployVerticle(new HttpVerticle(), new DeploymentOptions().setConfig(config));
             v.deployVerticle(new CouchDbVerticle(), new DeploymentOptions().setConfig(config));
+            v.deployVerticle(new ScanVerticle(), new DeploymentOptions().setConfig(config));
         });
 
     }
 
     private static <T extends Enum> void trySetPropertyFromEnv(
-            String key,
-            String prop,
-            CLI cli,
-            Function<String, T> enumSupplier) {
+        String key,
+        String prop,
+        CLI cli,
+        Function<String, T> enumSupplier) {
         var value = System.getenv(key);
         try {
             if (value != null) System.setProperty(prop, enumSupplier.apply(value).name());
@@ -117,6 +127,19 @@ public class Startup {
         cli.usage(builder);
         System.out.print(builder.toString());
         System.exit(1);
+    }
+
+    public static Optional<String> getApplicationVersion() {
+        InputStream stream = ClassLoader.getSystemResourceAsStream("META-INF/MANIFEST.MF");
+        try {
+            return Optional.ofNullable(
+                new Manifest(stream)
+                    .getMainAttributes()
+                    .getValue("Implementation-VersionInfo"));
+        } catch (IOException | NullPointerException e) {
+            log.catching(e);
+        }
+        return Optional.empty();
     }
 
 }

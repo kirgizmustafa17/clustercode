@@ -3,7 +3,7 @@ package clustercode.impl.cleanup.processor;
 import clustercode.api.cleanup.CleanupContext;
 import clustercode.api.cleanup.CleanupProcessor;
 import clustercode.impl.cleanup.CleanupConfig;
-import lombok.extern.slf4j.XSlf4j;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -11,9 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Provides a processor which deletes the source file.
+ * Provides a processor which deletes the path file.
  */
-@XSlf4j
+@Slf4j
 public class DeleteSourceProcessor implements CleanupProcessor {
 
     private final CleanupConfig cleanupConfig;
@@ -25,19 +25,17 @@ public class DeleteSourceProcessor implements CleanupProcessor {
 
     @Override
     public CleanupContext processStep(CleanupContext context) {
-        log.entry(context);
 
-        Path source = cleanupConfig.base_input_dir().resolve(
-                context.getTranscodeFinishedEvent().getMedia().getSourcePath());
+        Path source = context.getTranscodeFinishedEvent().getMedia().getSubstitutedPath(cleanupConfig.base_input_dir()).get();
 
         if (!context.getTranscodeFinishedEvent().isSuccessful()) {
             log.warn("Not deleting {}, since transcoding failed.", source);
-            return log.exit(context);
+            return context;
         }
 
         deleteFile(source);
 
-        return log.exit(context);
+        return context;
     }
 
     void deleteFile(Path path) {

@@ -21,7 +21,7 @@ public class DefaultProfileMatcher implements ProfileMatcher {
     private final ProfileParser parser;
     private final ProfileScanConfig profileScanConfig;
 
-    DefaultProfileMatcher(ProfileScanConfig profileScanConfig,
+    public DefaultProfileMatcher(ProfileScanConfig profileScanConfig,
                           ProfileParser parser) {
         this.parser = parser;
         this.profileScanConfig = profileScanConfig;

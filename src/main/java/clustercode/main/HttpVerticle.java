@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
 import java.io.File;
+import java.util.UUID;
 
 @Slf4j
 public class HttpVerticle extends AbstractVerticle {
@@ -55,7 +56,7 @@ public class HttpVerticle extends AbstractVerticle {
                     dbService.get(result -> {
                         if (result.succeeded()) {
 
-                            addTask(dbService, r, result.result().getId());
+                            addTask(dbService, r, result.result().getJobId());
                             messagingService.sendTaskAdded(
                                     result.result(),
                                     handler -> {
@@ -120,8 +121,8 @@ public class HttpVerticle extends AbstractVerticle {
 
     }
 
-    private void addTask(CouchDbService dbService, RoutingContext r, String uuid) {
-        dbService.save(TaskAddedEvent.builder().id(uuid).build(), result -> {
+    private void addTask(CouchDbService dbService, RoutingContext r, UUID uuid) {
+        dbService.save(TaskAddedEvent.builder().jobId(uuid).build(), result -> {
             if (result.succeeded()) {
                 r.response().end("save succeeded");
             } else {

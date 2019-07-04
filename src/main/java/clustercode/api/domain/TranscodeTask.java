@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class TranscodeTask {
 
     /**
-     * The source media object.
+     * The path media object.
      */
     private Media media;
 

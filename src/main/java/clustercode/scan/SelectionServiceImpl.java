@@ -1,30 +1,36 @@
 package clustercode.scan;
 
-import clustercode.scheduling.Constraint;
 import clustercode.api.domain.Media;
-import lombok.extern.slf4j.XSlf4j;
+import clustercode.scheduling.Constraint;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Inject;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@XSlf4j
+@Slf4j
 public class SelectionServiceImpl implements SelectionService {
 
     private final Set<Constraint> constraints;
 
-    @Inject
     SelectionServiceImpl(Set<Constraint> constraints) {
         this.constraints = constraints;
     }
 
     @Override
     public Optional<Media> selectMedia(List<Media> list) {
-        return log.exit(list.stream()
-                //.sorted(Comparator.comparingInt(Media::getPriority).reversed())
-                .filter(this::checkConstraints)
-                .findFirst());
+        log.debug("Selecting a suitable media for scheduling.");
+        return list
+            .stream()
+            .sorted(Comparator
+                .comparingInt((Media media) ->
+                    media
+                        .getPriority()
+                        .orElse(0))
+                .reversed())
+            .filter(this::checkConstraints)
+            .findFirst();
     }
 
     /**

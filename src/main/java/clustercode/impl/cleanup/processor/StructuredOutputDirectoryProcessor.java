@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 
 /**
- * Provides a processor which recreates the source directory tree in the configured root output directory. The priority
+ * Provides a processor which recreates the path directory tree in the configured root output directory. The priority
  * directory will be omitted. If overwriting is disabled, the file will have a timestamp appended in the file name.
  */
 public class StructuredOutputDirectoryProcessor
@@ -35,7 +35,7 @@ public class StructuredOutputDirectoryProcessor
 
         Path source = result.getTemporaryPath();
 
-        Path media = result.getMedia().getSourcePath();
+        Path media = result.getMedia().getFullPath().get();
 
         Path target = createOutputDirectoryTree(media);
 
@@ -56,7 +56,7 @@ public class StructuredOutputDirectoryProcessor
      * be created.
      * </p>
      *
-     * @param mediaSource the media source, which requires at least 1 parent element.
+     * @param mediaSource the media path, which requires at least 1 parent element.
      * @return the target as described.
      */
     Path createOutputDirectoryTree(Path mediaSource) {

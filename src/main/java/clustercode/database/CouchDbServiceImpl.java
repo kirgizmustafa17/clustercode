@@ -9,7 +9,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.reactivex.circuitbreaker.CircuitBreaker;
-import io.vertx.reactivex.ext.shell.system.Job;
 import lombok.extern.slf4j.Slf4j;
 import org.ektorp.DbAccessException;
 import org.ektorp.http.StdHttpClient;
@@ -19,7 +18,6 @@ import org.slf4j.MDC;
 
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 
 @Slf4j
@@ -89,12 +87,12 @@ public class CouchDbServiceImpl implements CouchDbService {
         MDC.put("event", event.toJson().toString());
         log.info("Saving event.");
         try {
-            var doc = this.db.get(JobDocument.class, event.getId());
-            doc.setTask(Task
-                    .builder()
-                    .args(event.getArgs())
-                    .file(event.getFile())
-                    .build());
+            var doc = this.db.get(JobDocument.class, event.getJobId().toString());
+   //         doc.setTask(Task
+   //                 .builder()
+   //                 .args(event.getArgs())
+   //                 .file(event.getFile())
+    //                .build());
             this.db.update(doc);
             resultHandler.handle(Future.succeededFuture());
 
@@ -111,10 +109,10 @@ public class CouchDbServiceImpl implements CouchDbService {
         try {
             var job = this.db
                     .get(JobDocument.class, "f2298ec6-f036-4b9c-8a57-8f070268d37a");
-            var event = job.getTask();
-            MDC.put("event", event.toString());
+       //     var event = job.getTask();
+       //     MDC.put("event", event.toString());
             log.info("Got event");
-            resultHandler.handle(Future.succeededFuture(job.getTaskAddedEvent()));
+       //     resultHandler.handle(Future.succeededFuture(job.getTaskAddedEvent()));
         } catch (DbAccessException ex) {
             resultHandler.handle(Future.failedFuture(ex));
         } finally {

@@ -61,7 +61,6 @@ public class MarkSourceProcessorTest {
         var source = fs.getPath("0", "video.ext");
         var expected = fs.getPath("0", "video.ext.done");
 
-        media.setSourcePath(source);
         subject.processStep(context);
 
         assertThat(expected).doesNotExist();

@@ -52,7 +52,6 @@ public class StructuredOutputDirectoryProcessorTest {
         var temp = fs.createFile(fs.getPath("tmp", "file.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
-        media.setSourcePath(source);
 
         var result = subject.processStep(context);
 
@@ -68,7 +67,6 @@ public class StructuredOutputDirectoryProcessorTest {
         var temp = fs.createFile(fs.getPath("tmp", "file.mkv"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
-        media.setSourcePath(source);
 
         var result = subject.processStep(context);
 
@@ -85,7 +83,6 @@ public class StructuredOutputDirectoryProcessorTest {
         var temp = fs.createFile(fs.getPath("tmp", "file.ext"));
 
         transcodeFinishedEvent.setTemporaryPath(temp);
-        media.setSourcePath(source);
 
         var result = subject.processStep(context);
 

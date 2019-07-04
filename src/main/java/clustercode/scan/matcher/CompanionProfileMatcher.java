@@ -22,8 +22,7 @@ public class CompanionProfileMatcher implements ProfileMatcher {
     private final ProfileScanConfig scanConfig;
     private final ProfileParser profileParser;
 
-    @Inject
-    CompanionProfileMatcher(ProfileScanConfig scanConfig,
+    public CompanionProfileMatcher(ProfileScanConfig scanConfig,
                             ProfileParser profileParser) {
         this.scanConfig = scanConfig;
         this.profileParser = profileParser;

@@ -11,7 +11,7 @@ public class ConstraintFactory {
 
     private final JsonObject config;
 
-    ConstraintFactory(JsonObject config) {
+    public ConstraintFactory(JsonObject config) {
         this.config = config;
     }
 

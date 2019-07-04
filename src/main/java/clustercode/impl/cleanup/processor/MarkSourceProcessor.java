@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Provides a processor which marks the source file as done, so that it would not be rescheduled for transcoding during
+ * Provides a processor which marks the path file as done, so that it would not be rescheduled for transcoding during
  * the next scan.
  */
 public class MarkSourceProcessor
