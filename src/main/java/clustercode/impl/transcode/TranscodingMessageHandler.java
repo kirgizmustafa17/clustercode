@@ -2,7 +2,7 @@ package clustercode.impl.transcode;
 
 import clustercode.api.domain.TranscodeTask;
 import clustercode.api.event.RxEventBus;
-import clustercode.scan.messages.ProfileSelectedMessage;
+import clustercode.scheduling.messages.ProfileSelectedMessage;
 import clustercode.api.transcode.TranscodingService;
 import lombok.extern.slf4j.Slf4j;
 

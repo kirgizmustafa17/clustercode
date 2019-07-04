@@ -5,7 +5,7 @@ import clustercode.main.config.AnnotatedCli;
 import clustercode.main.config.Configuration;
 import clustercode.main.config.converter.LogFormat;
 import clustercode.main.config.converter.LogLevel;
-import clustercode.scan.ScanVerticle;
+import clustercode.scheduling.ScanVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
