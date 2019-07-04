@@ -41,11 +41,13 @@ allprojects {
 gradle.projectsEvaluated {
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        options.annotationProcessorPath = configurations.annotationProcessor
     }
 }
 
 dependencies {
     compileOnly "org.projectlombok:lombok:1.18.+"
+    annotationProcessor "org.projectlombok:lombok:1.18.+"
     testCompileOnly "org.projectlombok:lombok:1.18.+"
 
     compile "com.google.inject.extensions:guice-multibindings:${guiceVersion}"
@@ -57,8 +59,9 @@ dependencies {
 
     // vertx
     compileOnly "io.vertx:vertx-codegen:${ver_vertx}"
-    compile "io.vertx:vertx-codegen:${ver_vertx}:processor"
+    annotationProcessor "io.vertx:vertx-codegen:${ver_vertx}"
     compile "io.vertx:vertx-service-proxy:${ver_vertx}"
+    annotationProcessor "io.vertx:vertx-service-proxy:${ver_vertx}"
     compile "io.vertx:vertx-circuit-breaker:${ver_vertx}"
     compile "io.vertx:vertx-web:${ver_vertx}"
     compile "io.vertx:vertx-config:${ver_vertx}"
@@ -102,18 +105,6 @@ shadowJar {
     baseName = "clustercode"
     classifier = null
     version = null
-}
-
-task fullBuild(type: Jar) {
-    manifest {
-        attributes "Main-Class": "clustercode.main.Startup",
-                "Implementation-Title": project.name
-    }
-    archiveName = "clustercode.jar"
-    baseName = project.name
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
 }
 
 task downloadDependenciesCustom(type: Exec) {
