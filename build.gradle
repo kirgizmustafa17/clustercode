@@ -75,7 +75,7 @@ dependencies {
     compile "io.micrometer:micrometer-registry-prometheus:${ver_micrometer}"
 
     // logging
-    compile "org.slf4j:slf4j-ext:1.8.+"
+    compile "org.slf4j:slf4j-api:2.0.0-alpha0"
     runtime "org.apache.logging.log4j:log4j-api:${ver_log4j2}"
     runtime "org.apache.logging.log4j:log4j-core:${ver_log4j2}"
     runtime "org.apache.logging.log4j:log4j-slf4j18-impl:${ver_log4j2}"
@@ -84,7 +84,7 @@ dependencies {
     testRuntime "org.apache.logging.log4j:log4j-slf4j18-impl:${ver_log4j2}"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:${ver_junit}"
     testCompile "org.junit.jupiter:junit-jupiter-api:${ver_junit}"
-    testCompile "org.mockito:mockito-all:2.0.+"
+    testCompile "org.mockito:mockito-core:2.+"
     testCompile "com.google.jimfs:jimfs:1.+"
     testCompile "org.assertj:assertj-core:3.11.1"
 
@@ -125,8 +125,6 @@ task resolveDependencies {
         }
     }
 }
-
-fullBuild.dependsOn test
 
 task generateVertxSources(type: JavaCompile, group: 'build', description: 'Generates the Vertx code') {
     source = sourceSets.main.java

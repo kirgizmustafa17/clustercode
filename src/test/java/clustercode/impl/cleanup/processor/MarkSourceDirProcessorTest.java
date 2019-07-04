@@ -55,7 +55,7 @@ public class MarkSourceDirProcessorTest {
         var expected = markDir.resolve("0").resolve("video.ext.done");
 
         fs.createFile(inputDir.resolve(source));
-        media.setSourcePath(source);
+//        media.setSourcePath(source);
         subject.processStep(context);
 
         assertThat(expected).exists();
@@ -67,7 +67,7 @@ public class MarkSourceDirProcessorTest {
         var expected = markDir.resolve("0").resolve("movies").resolve("video.ext.done");
 
         fs.createFile(inputDir.resolve(source));
-        media.setSourcePath(source);
+//        media.setSourcePath(source);
         subject.processStep(context);
 
         assertThat(expected).exists();

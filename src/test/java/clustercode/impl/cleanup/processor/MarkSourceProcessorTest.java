@@ -30,6 +30,8 @@ public class MarkSourceProcessorTest {
     @Spy
     private Media media;
 
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -50,7 +52,7 @@ public class MarkSourceProcessorTest {
         var expected = inputDir.resolve("0").resolve("video.ext.done");
 
         fs.createFile(inputDir.resolve(source));
-        media.setSourcePath(source);
+
         subject.processStep(context);
 
         assertThat(expected).exists();

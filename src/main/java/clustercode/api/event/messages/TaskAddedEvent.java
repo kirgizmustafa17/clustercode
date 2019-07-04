@@ -1,6 +1,6 @@
 package clustercode.api.event.messages;
 
-import com.owlike.genson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.io.File;

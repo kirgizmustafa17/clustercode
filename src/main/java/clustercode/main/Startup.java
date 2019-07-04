@@ -5,7 +5,7 @@ import clustercode.main.config.AnnotatedCli;
 import clustercode.main.config.Configuration;
 import clustercode.main.config.converter.LogFormat;
 import clustercode.main.config.converter.LogLevel;
-import clustercode.scheduling.ScanVerticle;
+import clustercode.scheduling.SchedulingVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
@@ -17,9 +17,9 @@ import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.reactivex.config.ConfigRetriever;
 import io.vertx.reactivex.core.Vertx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.util.jar.Manifest;
 
 public class Startup {
 
-    private static XLogger log;
+    private static Logger log;
 
     public static void main(String[] args) throws Exception {
         System.setProperty("log4j2.debug", "debug");
@@ -59,7 +59,7 @@ public class Startup {
             printUsageAndExit(cli);
         }
 
-        log = XLoggerFactory.getXLogger(Startup.class);
+        log = LoggerFactory.getLogger(Startup.class);
 
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             // Normally the expectable exceptions should be caught, but to debug any unexpected ones we log them.
@@ -103,7 +103,7 @@ public class Startup {
             v.exceptionHandler(ex -> log.error("Unhandled Vertx exception:", ex));
             v.deployVerticle(new HttpVerticle(), new DeploymentOptions().setConfig(config));
             v.deployVerticle(new CouchDbVerticle(), new DeploymentOptions().setConfig(config));
-            v.deployVerticle(new ScanVerticle(), new DeploymentOptions().setConfig(config));
+            v.deployVerticle(new SchedulingVerticle(), new DeploymentOptions().setConfig(config));
         });
 
     }
@@ -137,7 +137,7 @@ public class Startup {
                     .getMainAttributes()
                     .getValue("Implementation-VersionInfo"));
         } catch (IOException | NullPointerException e) {
-            log.catching(e);
+            log.error("", e);
         }
         return Optional.empty();
     }

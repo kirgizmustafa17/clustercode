@@ -32,6 +32,9 @@ public class StructuredOutputDirectoryProcessorTest {
 
     private Path outputDir;
 
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+    private ClockBasedUnitTest clock = new ClockBasedUnitTest();
+
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);

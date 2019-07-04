@@ -30,6 +30,8 @@ public class DeleteSourceProcessorTest {
     @Spy
     private Media media;
 
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
+
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -45,7 +47,7 @@ public class DeleteSourceProcessorTest {
     public void processStep_ShouldDeleteSourceFile_IfFileExists() throws Exception {
 
         var source = fs.createFile(fs.getPath("0", "video.ext"));
-        media.setSourcePath(source);
+//        media.setSourcePath(source);
 
         subject.processStep(context);
 
@@ -55,7 +57,7 @@ public class DeleteSourceProcessorTest {
     @Test
     public void processStep_ShouldDoNothing_IfFileNotExists() throws Exception {
         var source = fs.getPath("0", "video.ext");
-        media.setSourcePath(source);
+//        media.setSourcePath(source);
 
         subject.processStep(context);
 

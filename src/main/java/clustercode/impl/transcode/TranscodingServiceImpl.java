@@ -14,7 +14,7 @@ import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import lombok.Synchronized;
-import lombok.extern.slf4j.XSlf4j;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.nio.file.Path;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@XSlf4j
+@Slf4j
 public class TranscodingServiceImpl implements TranscodingService {
 
     public static final String OUTPUT_PLACEHOLDER = "${OUTPUT}";
@@ -40,9 +40,9 @@ public class TranscodingServiceImpl implements TranscodingService {
         this.publisher = PublishSubject.create().toSerialized();
 
         publisher.ofType(TranscodeTask.class)
-                 .observeOn(Schedulers.computation())
-                 .subscribeOn(Schedulers.io())
-                 .subscribe(this::prepareTranscode);
+            .observeOn(Schedulers.computation())
+            .subscribeOn(Schedulers.io())
+            .subscribe(this::prepareTranscode);
     }
 
     @Synchronized
@@ -59,15 +59,14 @@ public class TranscodingServiceImpl implements TranscodingService {
 
     private List<String> buildArguments(Path source, Path target, TranscodeTask task) {
         return task.getProfile()
-                   .getArguments()
-                   .stream()
-                   .map(s -> replaceInput(s, source))
-                   .map(s -> replaceOutput(s, target))
-                   .collect(Collectors.toList());
+            .getArguments()
+            .stream()
+            .map(s -> replaceInput(s, source))
+            .map(s -> replaceOutput(s, target))
+            .collect(Collectors.toList());
     }
 
     private void onSuccess(Path tempFile, TranscodeTask task) {
-        log.entry(tempFile, task);
         var event = TranscodeFinishedEvent
             .builder()
             .temporaryPath(tempFile)
@@ -97,7 +96,6 @@ public class TranscodingServiceImpl implements TranscodingService {
     }
 
     private void prepareTranscode(TranscodeTask task) {
-        log.entry(task);
         var tempFile = transcoderConfig
             .temporary_dir()
             .resolve(FileUtil.getFileNameWithoutExtension(

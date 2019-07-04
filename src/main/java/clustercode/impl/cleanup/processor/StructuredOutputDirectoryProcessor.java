@@ -14,7 +14,7 @@ import java.time.Clock;
  * directory will be omitted. If overwriting is disabled, the file will have a timestamp appended in the file name.
  */
 public class StructuredOutputDirectoryProcessor
-        extends AbstractOutputDirectoryProcessor {
+    extends AbstractOutputDirectoryProcessor {
 
     private final CleanupConfig cleanupConfig;
 
@@ -28,10 +28,9 @@ public class StructuredOutputDirectoryProcessor
 
     @Override
     public CleanupContext processStep(CleanupContext context) {
-        log.entry(context);
         TranscodeFinishedEvent result = context.getTranscodeFinishedEvent();
 
-        if (isFailed(result)) return log.exit(context);
+        if (isFailed(result)) return context;
 
         Path source = result.getTemporaryPath();
 
@@ -43,7 +42,7 @@ public class StructuredOutputDirectoryProcessor
         Path finalPath = target.getParent().resolve(tempFile);
         FileUtil.createParentDirectoriesFor(finalPath);
         context.setOutputPath(moveAndReplaceExisting(source, finalPath, cleanupConfig.overwrite_files()));
-        return log.exit(context);
+        return context;
     }
 
     /**

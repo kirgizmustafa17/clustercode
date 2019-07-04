@@ -27,7 +27,6 @@ class FileSizeConstraintTest {
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        fs.setupFileSystem();
         inputDir = fs.getPath("input");
         Files.createDirectory(inputDir);
     }

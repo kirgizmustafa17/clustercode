@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class DirectoryStructureMatcherTest {
@@ -37,8 +37,7 @@ class DirectoryStructureMatcherTest {
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        fs.setupFileSystem();
-        Media.setFileSystem(fs._fs.get());
+
         profileFolder = fs.getPath("profiles");
         when(config.profile_file_name()).thenReturn("profile");
         when(config.profile_file_name_extension()).thenReturn(".ffmpeg");

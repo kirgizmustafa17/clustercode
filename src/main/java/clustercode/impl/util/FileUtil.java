@@ -1,6 +1,6 @@
 package clustercode.impl.util;
 
-import lombok.extern.slf4j.XSlf4j;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +9,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 
-@XSlf4j
+@Slf4j
 public class FileUtil {
 
     /**
@@ -46,7 +46,7 @@ public class FileUtil {
         if (index <= 0) {
             return "";
         } else {
-            return ext.substring(index, ext.length());
+            return ext.substring(index);
         }
     }
 

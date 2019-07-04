@@ -5,11 +5,11 @@ import clustercode.api.process.ProcessConfiguration;
 import clustercode.api.process.RunningExternalProcess;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import lombok.extern.slf4j.XSlf4j;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
 
-@XSlf4j
+@Slf4j
 public class ExternalProcessServiceImpl implements ExternalProcessService {
 
     @Override

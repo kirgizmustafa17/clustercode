@@ -7,7 +7,7 @@ import clustercode.api.process.ProcessConfiguration;
 import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.impl.util.InvalidConfigurationException;
 import clustercode.impl.util.Platform;
-import lombok.extern.slf4j.XSlf4j;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import java.nio.file.Path;
@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-@XSlf4j
+@Slf4j
 public class ChangeOwnerProcessor implements CleanupProcessor {
 
     private final CleanupConfig cleanupConfig;
@@ -43,9 +43,8 @@ public class ChangeOwnerProcessor implements CleanupProcessor {
 
     @Override
     public CleanupContext processStep(CleanupContext context) {
-        log.entry(context);
 
-        if (!isStepValid(context)) return log.exit(context);
+        if (!isStepValid(context)) return context;
 
         Path outputFile = context.getOutputPath();
         List<String> args = buildArguments(outputFile);
@@ -65,9 +64,9 @@ public class ChangeOwnerProcessor implements CleanupProcessor {
                 if (exitCode > 0) log.warn(
                     "Could not change owner of {}. Exit code of 'chown' with arguments {} was {}.",
                     outputFile, args, exitCode);
-            }, log::catching);
+            }, ex -> log.error("", ex));
 
-        return log.exit(context);
+        return context;
     }
 
     private boolean isStepValid(CleanupContext context) {

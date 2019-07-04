@@ -3,8 +3,8 @@ package clustercode.impl.cleanup.processor;
 import clustercode.api.cleanup.CleanupContext;
 import clustercode.api.cleanup.CleanupProcessor;
 import clustercode.impl.cleanup.CleanupConfig;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 public abstract class AbstractMarkSourceProcessor implements CleanupProcessor {
 
     protected final CleanupConfig cleanupConfig;
-    protected XLogger log = XLoggerFactory.getXLogger(getClass());
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     protected AbstractMarkSourceProcessor(CleanupConfig cleanupConfig) {
         this.cleanupConfig = cleanupConfig;
@@ -21,9 +21,8 @@ public abstract class AbstractMarkSourceProcessor implements CleanupProcessor {
 
     @Override
     public final CleanupContext processStep(CleanupContext context) {
-        log.entry(context);
-        if (!isStepValid(context)) return log.exit(context);
-        return log.exit(doProcessStep(context));
+        if (!isStepValid(context)) return context;
+        return doProcessStep(context);
     }
 
     protected abstract CleanupContext doProcessStep(CleanupContext context);

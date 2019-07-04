@@ -27,16 +27,15 @@ public class UnifiedOutputDirectoryProcessor
 
     @Override
     public CleanupContext processStep(CleanupContext context) {
-        log.entry(context);
         TranscodeFinishedEvent result = context.getTranscodeFinishedEvent();
 
-        if (isFailed(result)) return log.exit(context);
+        if (isFailed(result)) return context;
 
         Path source = result.getTemporaryPath();
         Path target = cleanupConfig.base_output_dir().resolve(source.getFileName());
 
         context.setOutputPath(moveAndReplaceExisting(source, target, cleanupConfig.overwrite_files()));
-        return log.exit(context);
+        return context;
     }
 
 }

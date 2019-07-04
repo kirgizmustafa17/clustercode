@@ -1,12 +1,11 @@
 package clustercode.impl.process;
 
-import lombok.extern.slf4j.XSlf4j;
 import clustercode.api.process.RunningExternalProcess;
-import org.slf4j.ext.XLogger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
 
-@XSlf4j
+@Slf4j
 class RunningProcessImpl implements RunningExternalProcess {
 
     private Process process;
@@ -25,7 +24,7 @@ class RunningProcessImpl implements RunningExternalProcess {
         try {
             Thread.sleep(unit.toMillis(timeout));
         } catch (InterruptedException e) {
-            log.catching(XLogger.Level.WARN, e);
+            log.warn("", e);
         }
         return this;
     }
@@ -36,7 +35,6 @@ class RunningProcessImpl implements RunningExternalProcess {
             log.debug("Waiting for process to destroy...");
             process.destroyForcibly().waitFor();
         } catch (InterruptedException e) {
-            log.throwing(e);
             throw new RuntimeException(e);
         }
     }
@@ -47,7 +45,6 @@ class RunningProcessImpl implements RunningExternalProcess {
             log.warn("Waiting for process to destroy within {} {}...", timeout, unit.toString().toLowerCase());
             return process.destroyForcibly().waitFor(timeout, unit);
         } catch (InterruptedException e) {
-            log.throwing(e);
             throw new RuntimeException(e);
         }
     }

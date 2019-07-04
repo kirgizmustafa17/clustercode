@@ -3,8 +3,8 @@ package clustercode.impl.cleanup.processor;
 import clustercode.api.cleanup.CleanupProcessor;
 import clustercode.api.event.messages.TranscodeFinishedEvent;
 import clustercode.impl.util.FileUtil;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,7 +18,7 @@ import java.time.temporal.TemporalAccessor;
 public abstract class AbstractOutputDirectoryProcessor implements CleanupProcessor {
 
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd.HH-mm-ss");
-    protected final XLogger log = XLoggerFactory.getXLogger(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     protected final Clock clock;
 
     protected AbstractOutputDirectoryProcessor(Clock clock) {
@@ -37,7 +37,6 @@ public abstract class AbstractOutputDirectoryProcessor implements CleanupProcess
      * @throws RuntimeException if the file could not be moved.
      */
     protected Path moveAndReplaceExisting(Path source, Path target, boolean overwrite) {
-        log.entry(source, target, "overwrite=".concat(Boolean.toString(overwrite)));
         if (Files.exists(target) && !overwrite) {
             log.debug("Target file {} exists already. Applying timestamp to target.", target);
             target = FileUtil.getTimestampedPath(target, ZonedDateTime.now(clock), FORMATTER);

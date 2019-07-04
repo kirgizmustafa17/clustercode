@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
-public class MediaScanServiceImplTest implements FileBasedUnitTest {
+public class MediaScanServiceImplTest {
 
     private MediaScanServiceImpl subject;
     private Path inputDir;
@@ -25,13 +25,13 @@ public class MediaScanServiceImplTest implements FileBasedUnitTest {
     private MediaScanConfig scanSettings;
 
     private Map<Path, List<Media>> candidates;
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
 
     @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        setupFileSystem();
         when(scanSettings.allowed_extensions()).thenReturn(Arrays.asList(".mp4"));
-        when(scanSettings.base_input_dir()).thenReturn(getPath("input"));
+        when(scanSettings.base_input_dir()).thenReturn(fs.getPath("input"));
 
         inputDir = scanSettings.base_input_dir();
         subject = new MediaScanServiceImpl(scanSettings, FileScannerImpl::new);
@@ -41,49 +41,49 @@ public class MediaScanServiceImplTest implements FileBasedUnitTest {
     public void getListOfMediaFiles_ShouldReturnListWithTwoEntries() throws Exception {
         Path dir1 = inputDir.resolve("1");
 
-        Path file11 = createFile(dir1.resolve("file11.mp4"));
-        Path file12 = createFile(dir1.resolve("file12.mp4"));
+        Path file11 = fs.createFile(dir1.resolve("file11.mp4"));
+        Path file12 = fs.createFile(dir1.resolve("file12.mp4"));
 
         List<Media> result = subject.getListOfMediaFiles(dir1);
 
         assertThat(result).extracting(m -> m.getFullPath().get())
-                          .containsExactly(inputDir.relativize(file11), inputDir.relativize(file12));
+            .containsExactly(inputDir.relativize(file11), inputDir.relativize(file12));
     }
 
     @Test
     public void getListOfMediaFiles_ShouldReturnListWithOneEntry_AndIgnoreCompanionFile() throws Exception {
         Path dir1 = inputDir.resolve("1");
 
-        Path file11 = createFile(dir1.resolve("file11.mp4"));
-        createFile(dir1.resolve("file12.mp4"));
-        createFile(dir1.resolve("file12.mp4.done"));
-        createFile(dir1.resolve("file13.txt"));
+        Path file11 = fs.createFile(dir1.resolve("file11.mp4"));
+        fs.createFile(dir1.resolve("file12.mp4"));
+        fs.createFile(dir1.resolve("file12.mp4.done"));
+        fs.createFile(dir1.resolve("file13.txt"));
 
         List<Media> result = subject.getListOfMediaFiles(dir1);
 
         assertThat(result)
-                .extracting(m -> m.getFullPath().get())
-                .containsExactly(inputDir.relativize(file11));
+            .extracting(m -> m.getFullPath().get())
+            .containsExactly(inputDir.relativize(file11));
     }
 
     @Test
     public void getListOfMediaFiles_ShouldReturnListWithOneEntry_AndIgnoreMarkedFileInMarkSourceDir() throws Exception {
-        Path dir1 = getPath("input","1");
+        Path dir1 = fs.getPath("input", "1");
 
-        Path file11 = createFile(dir1.resolve("file11.mp4"));
-        createFile(dir1.resolve("file12.mp4"));
-        createFile(scanSettings.base_input_dir().resolve("1").resolve("file12.mp4.done"));
+        Path file11 = fs.createFile(dir1.resolve("file11.mp4"));
+        fs.createFile(dir1.resolve("file12.mp4"));
+        fs.createFile(scanSettings.base_input_dir().resolve("1").resolve("file12.mp4.done"));
 
         List<Media> result = subject.getListOfMediaFiles(dir1);
 
         assertThat(result)
-                .extracting(m -> m.getFullPath().get())
-                .containsExactly(inputDir.relativize(file11));
+            .extracting(m -> m.getFullPath().get())
+            .containsExactly(inputDir.relativize(file11));
     }
 
     @Test
     public void getListOfMediaFiles_ShouldReturnEmptyList_IfNoFilesFound() throws Exception {
-        Path dir1 = createDirectory(inputDir.resolve("1"));
+        Path dir1 = fs.createDirectory(inputDir.resolve("1"));
 
         List<Media> result = subject.getListOfMediaFiles(dir1);
 
@@ -92,8 +92,8 @@ public class MediaScanServiceImplTest implements FileBasedUnitTest {
 
     @Test
     public void retrieveFiles_ShouldReturnOneEntry_AndIgnoreInvalidDirectories() throws Exception {
-        Path dir1 = createDirectory(inputDir.resolve("1"));
-        createDirectory(inputDir.resolve("inexistent"));
+        Path dir1 = fs.createDirectory(inputDir.resolve("1"));
+        fs.createDirectory(inputDir.resolve("inexistent"));
 
         candidates = subject.retrieveFiles();
 
