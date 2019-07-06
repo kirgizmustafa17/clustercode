@@ -6,7 +6,7 @@ import clustercode.main.config.converter.PathConverter;
 import io.vertx.core.cli.annotations.*;
 import lombok.Getter;
 
-import java.net.URL;
+import java.net.URI;
 import java.nio.file.Path;
 
 @Name("master")
@@ -18,12 +18,12 @@ public class AnnotatedCli {
     private boolean help;
     private LogLevel logLevel;
     private LogFormat logFormat;
-    private URL rabbitMqUrl;
+    private URI rabbitMqUri;
     private Integer httpPort;
 
     @Option(shortName = "c",
             longName = "config")
-    @Description("Config file location in .properties format.")
+    @Description("Config file path in .properties format.")
     @ConvertedBy(PathConverter.class)
     public void setConfigFile(Path configFile) {
         this.configFile = configFile;
@@ -42,7 +42,6 @@ public class AnnotatedCli {
             longName = "log.level",
             choices = {"debug", "info", "warn", "error", "fatal"})
     @Description("Log level")
-    //@ConvertedBy(LogLevelConverter.class)
     public void setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
     }
@@ -50,16 +49,15 @@ public class AnnotatedCli {
     @Option(longName = "log.format",
             choices = {"text", "json"})
     @Description("Log format")
-    //@ConvertedBy(LogFormatConverter.class)
     public void setLogFormat(LogFormat logLevel) {
         this.logFormat = logLevel;
     }
 
 
-    @Option(longName = "rabbitmq.url")
+    @Option(longName = "rabbitmq.uri")
     @Description("Expects a full amqp URL in the format 'amqp://host:port/'")
-    public void setRabbitMqUrl(URL rabbitMqUrl) {
-        this.rabbitMqUrl = rabbitMqUrl;
+    public void setRabbitMqUri(URI rabbitMqUri) {
+        this.rabbitMqUri = rabbitMqUri;
     }
 
     @Option(longName = "api.http.port")

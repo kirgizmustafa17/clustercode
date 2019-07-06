@@ -18,6 +18,12 @@ import java.util.stream.Collectors;
 public class ProfileParserImpl implements ProfileParser {
 
     public static final Pattern FORMAT_PATTERN = Pattern.compile("%\\{([a-zA-Z]+)=(.*)\\}");
+    private final ProfileScanConfig config;
+
+    public ProfileParserImpl(ProfileScanConfig profileScanConfig) {
+
+        this.config = profileScanConfig;
+    }
 
     @Override
     public Optional<Profile> parseFile(Path path) {
@@ -36,7 +42,9 @@ public class ProfileParserImpl implements ProfileParser {
                             .fields(lines.stream()
                                     .filter(this::isFieldLine)
                                     .collect(Collectors.toMap(this::extractKey, this::extractValue)))
-                            .location(path)
+                            .path(Profile.constructProfileURI(
+                                config.profile_base_dir(),
+                                path))
                             .build());
         } catch (IOException e) {
             MDC.put("error", e.getMessage());

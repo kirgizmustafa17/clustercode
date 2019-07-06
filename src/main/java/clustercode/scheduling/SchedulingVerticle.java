@@ -4,15 +4,16 @@ import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
 import clustercode.impl.util.InvalidConfigurationException;
 import clustercode.main.config.Configuration;
+import clustercode.scheduling.constraint.ConstraintFactory;
+import clustercode.scheduling.constraint.Constraints;
 import clustercode.scheduling.matcher.CompanionProfileMatcher;
 import clustercode.scheduling.matcher.DefaultProfileMatcher;
 import clustercode.scheduling.matcher.DirectoryStructureMatcher;
 import clustercode.scheduling.messages.MediaScannedMessage;
 import clustercode.scheduling.messages.MediaSelectedMessage;
 import clustercode.scheduling.messages.ProfileSelectedMessage;
-import clustercode.scheduling.constraint.ConstraintFactory;
-import clustercode.scheduling.constraint.Constraints;
 import io.reactivex.Maybe;
+import io.reactivex.disposables.Disposable;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -22,6 +23,7 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +43,9 @@ public class SchedulingVerticle extends AbstractVerticle {
     private SelectionService selectionService;
     private ProfileScanService profileScanService;
 
+    private List<Disposable> disposables = new ArrayList<>();
+    private List<MessageConsumer<JsonObject>> messageConsumers = new ArrayList<>();
+
     @Override
     public void start(Future<Void> startFuture) throws Exception {
 
@@ -48,9 +53,9 @@ public class SchedulingVerticle extends AbstractVerticle {
         var scanConfig = new ProfileScanConfig(config());
 
         this.profileScanService = new ProfileScanServiceImpl(Arrays.asList(
-            new CompanionProfileMatcher(scanConfig, new ProfileParserImpl()),
-            new DirectoryStructureMatcher(scanConfig, new ProfileParserImpl()),
-            new DefaultProfileMatcher(scanConfig, new ProfileParserImpl())
+            new CompanionProfileMatcher(scanConfig, new ProfileParserImpl(scanConfig)),
+            new DirectoryStructureMatcher(scanConfig, new ProfileParserImpl(scanConfig)),
+            new DefaultProfileMatcher(scanConfig, new ProfileParserImpl(scanConfig))
         ));
         this.scanService = new MediaScanServiceImpl(new MediaScanConfig(config()), FileScannerImpl::new);
 
@@ -76,21 +81,21 @@ public class SchedulingVerticle extends AbstractVerticle {
 
         this.eb = vertx.eventBus();
 
-        eb.consumer(MEDIA_SCAN_START, m -> {
+        messageConsumers.add(eb.consumer(MEDIA_SCAN_START, m -> {
             onMediaScanRequest();
             m.reply(true);
-        });
+        }));
 
         MessageConsumer<JsonObject> mediaSelectConsumer = eb.consumer(MEDIA_SCAN_COMPLETE);
-        mediaSelectConsumer.handler(this::onMediaScanned);
+        messageConsumers.add(mediaSelectConsumer.handler(this::onMediaScanned));
 
         MessageConsumer<JsonObject> mediaSelectCompleteConsumer = eb.consumer(MEDIA_SELECT_COMPLETE);
-        mediaSelectCompleteConsumer.handler(this::onMediaSelected);
+        messageConsumers.add(mediaSelectCompleteConsumer.handler(this::onMediaSelected));
 
         MessageConsumer<JsonObject> profileSelectCompleteConsumer = eb.consumer(PROFILE_SELECT_COMPLETE);
-        profileSelectCompleteConsumer.handler(this::onProfileSelected);
+        messageConsumers.add(profileSelectCompleteConsumer.handler(this::onProfileSelected));
 
-        log.info("Scanner started.");
+        log.debug("Verticle started.");
         startFuture.complete();
 
         eb.sender(MEDIA_SCAN_START).send(true);
@@ -99,25 +104,31 @@ public class SchedulingVerticle extends AbstractVerticle {
     void onMediaScanRequest() {
 
         Maybe<List<Media>> rx = vertx.rxExecuteBlocking(h -> h.complete(scanService.retrieveFilesAsList()));
-        rx
+        disposables.add(rx
             .doFinally(() -> MDC.remove("count"))
             .map(l -> MediaScannedMessage
                 .builder()
                 .mediaList(l)
                 .build())
-            .subscribe(m -> {
-                MDC.put("count", String.valueOf(m.getMediaList().size()));
-                log.info("Media files scanned.");
-                eb
-                    .sender(MEDIA_SCAN_COMPLETE)
-                    .send(m.toJson());
-            });
+            .subscribe(
+                m -> {
+                    MDC.put("count", String.valueOf(m.getMediaList().size()));
+                    log.info("Media files scanned.");
+                    eb
+                        .sender(MEDIA_SCAN_COMPLETE)
+                        .send(m.toJson());
+                },
+                ex -> {
+                    MDC.put("error", ex.getMessage());
+                    log.error("Cannot scan for media files, exiting.");
+                    System.exit(1);
+                }));
     }
 
     void onMediaScanned(Message<JsonObject> payload) {
         var msg = new MediaScannedMessage(payload.body());
         if (msg.listHasEntries()) {
-            vertx
+            disposables.add(vertx
                 .rxExecuteBlocking(h -> {
                     selectionService.selectMedia(msg.getMediaList())
                         .ifPresentOrElse(
@@ -144,7 +155,7 @@ public class SchedulingVerticle extends AbstractVerticle {
                     ex -> {
                         log.info(ex.getMessage());
                         scheduleNextRun();
-                    });
+                    }));
         } else {
             log.debug("No media items found.");
             scheduleNextRun();
@@ -154,7 +165,7 @@ public class SchedulingVerticle extends AbstractVerticle {
     private void onMediaSelected(Message<JsonObject> payload) {
         var msg = new MediaSelectedMessage(payload.body());
         if (msg.isSelected()) {
-            vertx
+            disposables.add(vertx
                 .rxExecuteBlocking(h ->
                     profileScanService
                         .selectProfile(msg.getMedia())
@@ -169,7 +180,7 @@ public class SchedulingVerticle extends AbstractVerticle {
                 })
                 .subscribe(
                     p -> {
-                        MDC.put("profile", p.getLocation().toString());
+                        MDC.put("profile", p.getPath().toString());
                         MDC.put("media", msg.getMedia().toString());
                         log.info("Profile selected.");
                         eb
@@ -184,7 +195,7 @@ public class SchedulingVerticle extends AbstractVerticle {
                     ex -> {
                         log.info(ex.getMessage());
                         scheduleNextRun();
-                    });
+                    }));
         }
     }
 
@@ -208,6 +219,13 @@ public class SchedulingVerticle extends AbstractVerticle {
         eb
             .sender(MEDIA_SCAN_START)
             .send(true);
+    }
+
+    @Override
+    public void stop(Future<Void> stopFuture) throws Exception {
+        this.disposables.forEach(Disposable::dispose);
+        this.messageConsumers.forEach(MessageConsumer::unregister);
+        stopFuture.complete();
     }
 
     private void checkInterval(long scanInterval) {

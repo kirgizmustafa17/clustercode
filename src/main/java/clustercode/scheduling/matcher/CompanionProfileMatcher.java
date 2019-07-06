@@ -22,25 +22,35 @@ public class CompanionProfileMatcher implements ProfileMatcher {
     private final ProfileParser profileParser;
 
     public CompanionProfileMatcher(ProfileScanConfig scanConfig,
-                            ProfileParser profileParser) {
+                                   ProfileParser profileParser) {
         this.scanConfig = scanConfig;
         this.profileParser = profileParser;
     }
 
     @Override
     public Optional<Profile> apply(Media candidate) {
-        var profile = candidate.getSubstitutedPath(scanConfig.profile_base_dir()).get().resolveSibling(
-                candidate.getRelativePath().get().getFileName() + scanConfig.profile_file_name_extension());
         try {
-            MDC.put("profile_dir", profile.getParent().toString());
-            MDC.put("file", profile.toString());
-            if (Files.exists(profile)) {
-                return profileParser.parseFile(profile);
+            var substPath = candidate.getSubstitutedPath(scanConfig.profile_base_dir());
+            var relPath = candidate.getRelativePath();
+            if (substPath.isPresent() && relPath.isPresent()) {
+                var profile = substPath.get()
+                    .resolveSibling(relPath.get().getFileName() + scanConfig.profile_file_name_extension());
+
+                MDC.put("profile_dir", profile.getParent().toString());
+                MDC.put("file", profile.toString());
+                if (Files.exists(profile)) {
+                    return profileParser.parseFile(profile);
+                } else {
+                    log.debug("Companion file does not exist.");
+                    return Optional.empty();
+                }
             } else {
-                log.debug("Companion file does not exist.");
+                MDC.put("media", candidate.toString());
+                log.warn("media does not have a path configured.");
                 return Optional.empty();
             }
         } finally {
+            MDC.remove("media");
             MDC.remove("file");
             MDC.remove("profile_dir");
         }

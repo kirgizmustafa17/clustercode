@@ -2,6 +2,7 @@ package clustercode.main.config;
 
 import io.vertx.core.json.JsonObject;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.Optional;
 
@@ -17,7 +18,7 @@ class JsonObjectBuilder {
         return this;
     }
 
-    JsonObjectBuilder addStringProperty(String key, URL value) {
+    JsonObjectBuilder addStringProperty(String key, URI value) {
         Optional.ofNullable(value).ifPresent(v -> json.put(key, v.toString()));
         return this;
     }

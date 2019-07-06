@@ -34,7 +34,6 @@ public class Startup {
     private static Logger log;
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("log4j2.debug", "debug");
         var cli = CLI.create(AnnotatedCli.class);
         var flags = new AnnotatedCli();
         try {
@@ -43,7 +42,7 @@ public class Startup {
             if (!parsed.isValid() || flags.isHelp()) {
                 printUsageAndExit(cli);
             }
-            System.setProperty("log4j2.configurationFile", "src/main/resources/log4j2.xml");
+
             System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory");
 
             // override default log properties from ENV if given.
@@ -67,9 +66,11 @@ public class Startup {
             System.exit(2);
         });
 
-        MDC.put("dir", new File("").getAbsolutePath());
-        log.debug("Using working dir.");
-        MDC.remove("dir");
+        MDC.put("version", getApplicationVersion().orElse("unknown"));
+        MDC.put("work_dir", new File("").getAbsolutePath());
+        log.info("Starting clustercode.");
+        MDC.remove("work_dir");
+        MDC.remove("version");
 
         ConfigRetriever retriever = ConfigRetriever.create(Vertx.vertx(),
             new ConfigRetrieverOptions()
@@ -90,7 +91,6 @@ public class Startup {
 
         retriever.getConfig(json -> {
             var config = json.result();
-            //  configV.close();
             var v = Vertx.vertx(new VertxOptions().setMetricsOptions(
                 new MicrometerMetricsOptions()
                     .setPrometheusOptions(new VertxPrometheusOptions()
@@ -135,7 +135,7 @@ public class Startup {
             return Optional.ofNullable(
                 new Manifest(stream)
                     .getMainAttributes()
-                    .getValue("Implementation-VersionInfo"));
+                    .getValue("Implementation-Version"));
         } catch (IOException | NullPointerException e) {
             log.error("", e);
         }

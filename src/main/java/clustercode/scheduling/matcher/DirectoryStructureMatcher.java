@@ -48,7 +48,7 @@ public class DirectoryStructureMatcher implements ProfileMatcher {
                 MDC.put("file", profileScanConfig.profile_base_dir().relativize(file).toString());
                 Optional<Profile> result = profileParser.parseFile(file);
                 if (result.isPresent()) {
-                    log.debug("Found profile: {}", result.get().getLocation());
+                    log.debug("Found profile: {}", result.get().getPath());
                     return result;
                 } else {
                     return parseRecursive(getProfileFileFromParentDirectory(file,

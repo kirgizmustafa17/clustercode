@@ -1,8 +1,7 @@
 package clustercode.api.domain;
 
+import clustercode.impl.util.FilesystemProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
@@ -10,7 +9,6 @@ import lombok.*;
 
 import java.net.URI;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -23,7 +21,7 @@ import java.util.Optional;
 @Builder
 public class Media extends AbstractJsonObject {
 
-    private static FileSystem fs = FileSystems.getDefault();
+    private FileSystem fs = FilesystemProvider.getInstance();
 
     @Setter(AccessLevel.PACKAGE)
     private URI path;
@@ -33,27 +31,44 @@ public class Media extends AbstractJsonObject {
 
     public Media(JsonObject json) {
         Optional.ofNullable(json.getString("path"))
-                .map(URI::create)
-                .ifPresent(u -> this.path = u);
+            .map(URI::create)
+            .ifPresent(u -> this.path = u);
         this.fileHash = json.getString("file_hash");
     }
 
+    public Media(int priority, Path relativePathWithoutPriority) {
+        this.path = constructMediaUri("input", relativePathWithoutPriority, priority);
+    }
+
+    public Media setFileSystem(FileSystem fs) {
+        this.fs = fs;
+        return this;
+    }
+
     @SneakyThrows
-    public static Media fromPath(Path basedir, Path relativePathWithoutPriority, int priority) {
+    public static Media fromPath(String basedir, int priority, Path relativePathWithoutPriority) {
         var media = new Media();
-        media.setPath(new URI(
-                "clustercode",
-                null,
-                basedir.toString(),
-                priority,
-                "/" + relativePathWithoutPriority.toString(),
-                null,
-                null));
+        media.setPath(constructMediaUri(basedir, relativePathWithoutPriority, priority));
         return media;
     }
 
-    public static void setFileSystem(FileSystem fs) {
-        Media.fs = fs;
+    @SneakyThrows
+    public static Media fromPath(int priority, Path relativePathWithoutPriority) {
+        var media = new Media();
+        media.setPath(constructMediaUri("input", relativePathWithoutPriority, priority));
+        return media;
+    }
+
+    @SneakyThrows
+    public static URI constructMediaUri(String baseDir, Path relativePathWithoutPriority, int priority) {
+        return new URI(
+            "clustercode",
+            null,
+            baseDir,
+            priority,
+            "/" + relativePathWithoutPriority.toString(),
+            null,
+            null);
     }
 
     @JsonIgnore
@@ -65,19 +80,13 @@ public class Media extends AbstractJsonObject {
     @JsonIgnore
     public Optional<Path> getRelativePath() {
         if (this.path == null) return Optional.empty();
-        return Optional.of(Paths.get(path.getPath()));
+        return Optional.of(Paths.get(path.getPath().replaceFirst("/*", "")));
     }
 
     @JsonIgnore
-    public Optional<Path> getFullPath() {
+    public Optional<String> getBase() {
         if (this.path == null) return Optional.empty();
-        return Optional.of(fs.getPath(path.getHost(), String.valueOf(path.getPort()), path.getPath()));
-    }
-
-    @JsonIgnore
-    public Optional<Path> getBasePath() {
-        if (this.path == null) return Optional.empty();
-        return Optional.of(fs.getPath(path.getHost()));
+        return Optional.of(path.getHost());
     }
 
     @JsonIgnore
@@ -86,9 +95,17 @@ public class Media extends AbstractJsonObject {
         return Optional.of(fs.getPath(String.valueOf(path.getPort()), path.getPath()));
     }
 
+    /**
+     * Gets the relative path, but with the given basePath as root.
+     *
+     * @param basePath the base path as resolved against this' media relative path.
+     * @return the new path, if this media has a path.
+     */
     @JsonIgnore
     public Optional<Path> getSubstitutedPath(Path basePath) {
         if (this.path == null) return Optional.empty();
-        return Optional.of(basePath.resolve(String.valueOf(path.getPort())).resolve(path.getPath()));
+        return Optional.of(basePath
+            .resolve(String.valueOf(path.getPort()))
+            .resolve(path.getPath().replaceFirst("/*", "")));
     }
 }

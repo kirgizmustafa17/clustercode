@@ -87,6 +87,7 @@ public class FileScannerImpl implements FileScanner {
         try {
             return createStream();
         } catch (RuntimeException e) {
+            log.warn(e.getMessage());
             return Stream.empty();
         }
     }

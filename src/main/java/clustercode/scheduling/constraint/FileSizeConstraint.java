@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.util.NoSuchElementException;
 
 /**
  * This constraint checks the file size of the given argument. If the file is too big or too small it will be
@@ -18,7 +19,7 @@ import java.text.DecimalFormat;
  */
 @Slf4j
 public class FileSizeConstraint
-        extends AbstractConstraint {
+    extends AbstractConstraint {
 
     public static long BYTES = 1;
     public static long KIBI_BYTES = BYTES * 1024;
@@ -38,27 +39,30 @@ public class FileSizeConstraint
     private void checkConfiguration(double minSize, double maxSize) {
         if (Math.min(minSize, maxSize) > 0 && minSize > maxSize) {
             throw new InvalidConfigurationException("minSize cannot be greater than maxSize. Min: {}, Max: {}",
-                    minSize, maxSize);
+                minSize, maxSize);
         }
         if (Math.min(minSize, maxSize) < 0) {
             throw new InvalidConfigurationException("File sizes cannot contain negative values. Min: {}, Max: {}",
-                    minSize, maxSize);
+                minSize, maxSize);
         }
         if (minSize == maxSize) {
             throw new InvalidConfigurationException("File sizes cannot be equal. Min: {}, Max: {}",
-                    minSize, maxSize);
+                minSize, maxSize);
         }
     }
 
     @Override
     public boolean accept(Media candidate) {
-        var file = candidate.getFullPath().get();
-        MDC.put("min_MB_required", formatNumber(minSize / MEBI_BYTES));
-        MDC.put("max_MB_allowed", formatNumber(maxSize / MEBI_BYTES));
-        MDC.put("file", file.toString());
         try {
+            MDC.put("min_MB_required", formatNumber(minSize / MEBI_BYTES));
+            MDC.put("max_MB_allowed", formatNumber(maxSize / MEBI_BYTES));
+
+            var file = candidate.getSubstitutedPath(baseInputDir).get();
             long size = Files.size(file);
+
+            MDC.put("file", file.toString());
             MDC.put("source_MB", formatNumber(size / MEBI_BYTES));
+
             if (minSize > 0 && maxSize > 0) {
                 // file between max and min
                 return logAndReturnResult(size >= minSize && size <= maxSize);
@@ -70,15 +74,19 @@ public class FileSizeConstraint
                 return logAndReturnResult(size >= minSize);
             }
         } catch (IOException e) {
-            MDC.put("error", e.getMessage());
-            log.warn("Could not determine file size. Declined file.");
-            return false;
+            MDC.put("error", e.toString());
+            MDC.put("help", "Could not determine file size.");
+            return logAndReturnResult(false);
+        } catch (NoSuchElementException e) {
+            MDC.put("help", "Media does not contain a path.");
+            return logAndReturnResult(false);
         } finally {
             MDC.remove("min_MB_required");
             MDC.remove("max_MB_allowed");
             MDC.remove("file");
             MDC.remove("source_MB");
             MDC.remove("error");
+            MDC.remove("help");
         }
     }
 

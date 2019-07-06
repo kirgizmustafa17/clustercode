@@ -80,7 +80,7 @@ public class MediaScanServiceImpl implements MediaScanService {
     }
 
     /**
-     * Creates a media object with the given priority dir and file location.
+     * Creates a media object with the given priority dir and file path.
      *
      * @param priorityDir the root path, which must start with a number.
      * @param file        the file name, which will be relativized against the base input dir.
@@ -88,10 +88,10 @@ public class MediaScanServiceImpl implements MediaScanService {
      */
     Media buildMedia(Path priorityDir, Path file) {
         var prio = getNumberFromDir(priorityDir);
+        var parentPath = scanConfig.base_input_dir().resolve(String.valueOf(prio));
         return Media.fromPath(
-            scanConfig.base_input_dir(),
-            scanConfig.base_input_dir().resolve(String.valueOf(prio)).relativize(file),
-            prio);
+            prio, parentPath.relativize(file)
+        );
     }
 
     /**

@@ -10,7 +10,7 @@ public class FilesystemProvider {
     private static FileSystem fs = FileSystems.getDefault();
 
     private FilesystemProvider() {
-
+        // Prevent construction
     }
 
     /**

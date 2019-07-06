@@ -1,16 +1,19 @@
 package clustercode.main.config;
 
 import io.vertx.core.json.JsonObject;
+import lombok.SneakyThrows;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public enum Configuration {
 
-    rabbitmq_url,
+    rabbitmq_uri,
     rabbitmq_channels_task_added_queue_queueName,
     rabbitmq_channels_task_added_queue_durable,
     rabbitmq_channels_task_added_qos_prefetchCount,
@@ -50,7 +53,7 @@ public enum Configuration {
 
     public static JsonObject createFromDefault() {
         return new JsonObject()
-            .put(rabbitmq_url.key(), "amqp://guest:guest@rabbitmq:5672/")
+            .put(rabbitmq_uri.key(), "amqp://guest:guest@rabbitmq:5672/")
 
             .put(rabbitmq_channels_task_added_queue_queueName.key(), "task-added")
             .put(rabbitmq_channels_task_added_queue_durable.key(), true)
@@ -103,9 +106,10 @@ public enum Configuration {
         return json;
     }
 
+    @SneakyThrows
     public static JsonObject createFromFlags(AnnotatedCli cli) {
         return new JsonObjectBuilder(new JsonObject())
-            .addStringProperty(rabbitmq_url.key(), cli.getRabbitMqUrl())
+            .addStringProperty(rabbitmq_uri.key(), cli.getRabbitMqUri())
             .addIntProperty(api_http_port.key(), cli.getHttpPort())
             .build();
     }

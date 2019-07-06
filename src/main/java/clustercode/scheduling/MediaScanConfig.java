@@ -4,6 +4,7 @@ import clustercode.impl.util.FilesystemProvider;
 import clustercode.main.config.Configuration;
 import io.vertx.core.json.JsonObject;
 
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,14 +16,18 @@ public class MediaScanConfig {
     private final List<String> allowedExtensions;
 
     public MediaScanConfig(JsonObject config) {
-        this.baseInputDir = FilesystemProvider.getInstance().getPath(config.getString(Configuration.input_dir.key()));
+        this(config, FilesystemProvider.getInstance());
+    }
+
+    MediaScanConfig(JsonObject config, FileSystem fs) {
+        this.baseInputDir = fs.getPath(config.getString(Configuration.input_dir.key()));
         this.allowedExtensions = Stream
-                .of(config.getString(
-                        Configuration.scan_allowed_extensions.key())
-                        .trim()
-                        .split(","))
-                .map(String::trim)
-                .collect(Collectors.toList());
+            .of(config.getString(
+                Configuration.scan_allowed_extensions.key())
+                .trim()
+                .split(","))
+            .map(String::trim)
+            .collect(Collectors.toList());
     }
 
     /**

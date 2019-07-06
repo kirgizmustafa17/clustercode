@@ -34,7 +34,7 @@ public class StructuredOutputDirectoryProcessor
 
         Path source = result.getTemporaryPath();
 
-        Path media = result.getMedia().getFullPath().get();
+        Path media = result.getMedia().getRelativePathWithPriority().get();
 
         Path target = createOutputDirectoryTree(media);
 
