@@ -2,6 +2,7 @@ package clustercode.scheduling.matcher;
 
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
+import clustercode.impl.util.FilesystemProvider;
 import clustercode.scheduling.ProfileParser;
 import clustercode.scheduling.ProfileScanConfig;
 import clustercode.test.util.FileBasedUnitTest;
@@ -25,18 +26,19 @@ class DirectoryStructureMatcherTest {
     private ProfileParser parser;
     @Mock
     private ProfileScanConfig config;
-    @Mock
+    @Spy
     private Media candidate;
     @Spy
     private Profile profile;
     private Path profileFolder;
 
-    private FileBasedUnitTest fs = new FileBasedUnitTest() {
-    };
+    private FileBasedUnitTest fs = new FileBasedUnitTest();
 
     @BeforeEach
     public void setUp() throws Exception {
+        FilesystemProvider.setFileSystem(fs.getFileSystem());
         MockitoAnnotations.initMocks(this);
+
 
         profileFolder = fs.getPath("profiles");
         when(config.profile_file_name()).thenReturn("profile");
@@ -50,7 +52,7 @@ class DirectoryStructureMatcherTest {
         Path media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
         Path profileFile = fs.createFile(profileFolder.resolve("0/movies/subdir/profile.ffmpeg"));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
+        when(candidate.getRelativePathWithPriority()).thenReturn(Optional.of(media));
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
 
         Optional<Profile> result = subject.apply(candidate);
@@ -63,7 +65,7 @@ class DirectoryStructureMatcherTest {
         Path media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
         Path profileFile = fs.createFile(profileFolder.resolve("0/movies/profile.ffmpeg"));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
+        when(candidate.getRelativePathWithPriority()).thenReturn(Optional.of(media));
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
 
         Optional<Profile> result = subject.apply(candidate);
@@ -76,21 +78,19 @@ class DirectoryStructureMatcherTest {
         Path media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
         Path profileFile = fs.createFile(profileFolder.resolve("0/profile.ffmpeg"));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
+        when(candidate.getRelativePathWithPriority()).thenReturn(Optional.of(media));
         when(parser.parseFile(profileFile)).thenReturn(Optional.of(profile));
-        profile.setLocation(profileFile);
 
         Optional<Profile> result = subject.apply(candidate);
 
         assertThat(result).hasValue(profile);
     }
 
-
     @Test
     public void apply_ShouldReturnEmptyProfile_IfNoFileMatches() throws Exception {
         Path media = fs.createFile(fs.getPath("0", "movies", "subdir", "movie.mp4"));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
+        when(candidate.getRelativePathWithPriority()).thenReturn(Optional.of(media));
         when(parser.parseFile(any())).thenReturn(Optional.empty());
 
         Optional<Profile> result = subject.apply(candidate);
@@ -105,7 +105,7 @@ class DirectoryStructureMatcherTest {
         fs.createFile(profileFolder.resolve("0/movies/subdir/profile.ffmpeg"));
         fs.createFile(profileFolder.resolve("0/movies/profile.ffmpeg"));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
+        when(candidate.getRelativePathWithPriority()).thenReturn(Optional.of(media));
         when(parser.parseFile(any())).thenReturn(Optional.empty(), Optional.of(profile));
 
         Optional<Profile> result = subject.apply(candidate);

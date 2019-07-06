@@ -11,11 +11,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CompanionProfileMatcherTest {
@@ -24,7 +24,6 @@ public class CompanionProfileMatcherTest {
     private ProfileScanConfig config;
     @Mock
     private ProfileParser profileParser;
-    @Mock
     private Media candidate;
     @Spy
     private Profile profile;
@@ -36,41 +35,33 @@ public class CompanionProfileMatcherTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         subject = new CompanionProfileMatcher(config, profileParser);
+        candidate = new Media(0, fs.getPath("movie.mp4"));
         when(config.profile_file_name_extension()).thenReturn(".ffmpeg");
+        when(config.profile_base_dir()).thenReturn(fs.getPath("profiles"));
         when(profileParser.parseFile(any())).thenReturn(Optional.of(profile));
     }
 
     @Test
-    public void apply_ShouldReturnProfile_IfFileFoundAndReadable() throws Exception {
-        Path media = fs.createParentDirOf(fs.getPath("input", "movie.mp4"));
-        fs.createFile(fs.getPath("input", "movie.mp4.ffmpeg"));
+    public void apply_ShouldReturnProfile_IfProfileFoundAndReadable() throws Exception {
+        var profilePath = fs.createFile(fs.getPath("profiles", "0", "movie.mp4.ffmpeg"));
+        when(profileParser.parseFile(profilePath)).thenReturn(Optional.of(profile));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
-
-        Profile result = subject.apply(candidate).get();
-
-        assertThat(result).isEqualTo(profile);
+        assertThat(subject.apply(candidate)).hasValue(profile);
     }
 
     @Test
-    public void apply_ShouldReturnEmpty_IfFileNotFound() throws Exception {
-        Path media = fs.createParentDirOf(fs.getPath("input", "movie.mp4"));
-
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
-
+    public void apply_ShouldReturnEmpty_IfProfileNotFound() throws Exception {
         assertThat(subject.apply(candidate)).isEmpty();
     }
 
     @Test
-    public void apply_ShouldReturnEmpty_IfFileNotReadable() throws Exception {
-        Path media = fs.createParentDirOf(fs.getPath("input", "movie.mkv"));
-        Path file = fs.createFile(fs.getPath("input", "movie.mkv.ffmpeg"));
+    public void apply_ShouldReturnEmpty_IfProfileNotReadable() throws Exception {
+        var profilePath = fs.createFile(fs.getPath("profiles", "0", "movie.mp4.ffmpeg"));
 
-        when(candidate.getRelativePath()).thenReturn(Optional.of(media));
-
-        when(profileParser.parseFile(file)).thenReturn(Optional.empty());
+        when(profileParser.parseFile(profilePath)).thenReturn(Optional.empty());
 
         assertThat(subject.apply(candidate)).isEmpty();
+        verify(profileParser).parseFile(profilePath);
     }
 
 }

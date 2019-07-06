@@ -1,6 +1,5 @@
 package clustercode.scheduling;
 
-import clustercode.api.domain.Media;
 import clustercode.test.util.FileBasedUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,8 +8,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -24,7 +21,6 @@ public class MediaScanServiceImplTest {
     @Mock
     private MediaScanConfig scanSettings;
 
-    private Map<Path, List<Media>> candidates;
     private FileBasedUnitTest fs = new FileBasedUnitTest();
 
     @BeforeEach
@@ -39,63 +35,36 @@ public class MediaScanServiceImplTest {
 
     @Test
     public void getListOfMediaFiles_ShouldReturnListWithTwoEntries() throws Exception {
-        Path dir1 = inputDir.resolve("1");
+        var dir1 = inputDir.resolve("1");
 
-        Path file11 = fs.createFile(dir1.resolve("file11.mp4"));
-        Path file12 = fs.createFile(dir1.resolve("file12.mp4"));
-
-        List<Media> result = subject.getListOfMediaFiles(dir1);
-
-        assertThat(result).extracting(m -> m.getFullPath().get())
-            .containsExactly(inputDir.relativize(file11), inputDir.relativize(file12));
-    }
-
-    @Test
-    public void getListOfMediaFiles_ShouldReturnListWithOneEntry_AndIgnoreCompanionFile() throws Exception {
-        Path dir1 = inputDir.resolve("1");
-
-        Path file11 = fs.createFile(dir1.resolve("file11.mp4"));
+        fs.createFile(dir1.resolve("file11.mp4"));
         fs.createFile(dir1.resolve("file12.mp4"));
-        fs.createFile(dir1.resolve("file12.mp4.done"));
-        fs.createFile(dir1.resolve("file13.txt"));
 
-        List<Media> result = subject.getListOfMediaFiles(dir1);
+        var result = subject.getListOfMediaFiles(dir1);
 
         assertThat(result)
-            .extracting(m -> m.getFullPath().get())
-            .containsExactly(inputDir.relativize(file11));
-    }
-
-    @Test
-    public void getListOfMediaFiles_ShouldReturnListWithOneEntry_AndIgnoreMarkedFileInMarkSourceDir() throws Exception {
-        Path dir1 = fs.getPath("input", "1");
-
-        Path file11 = fs.createFile(dir1.resolve("file11.mp4"));
-        fs.createFile(dir1.resolve("file12.mp4"));
-        fs.createFile(scanSettings.base_input_dir().resolve("1").resolve("file12.mp4.done"));
-
-        List<Media> result = subject.getListOfMediaFiles(dir1);
-
-        assertThat(result)
-            .extracting(m -> m.getFullPath().get())
-            .containsExactly(inputDir.relativize(file11));
+            .extracting(m -> m
+                .setFileSystem(fs.getFileSystem())
+                .getRelativePathWithPriority()
+                .orElse(null))
+            .containsExactly(fs.getPath("1/file11.mp4"), fs.getPath("1/file12.mp4"));
     }
 
     @Test
     public void getListOfMediaFiles_ShouldReturnEmptyList_IfNoFilesFound() throws Exception {
-        Path dir1 = fs.createDirectory(inputDir.resolve("1"));
+        var dir1 = fs.createDirectory(inputDir.resolve("1"));
 
-        List<Media> result = subject.getListOfMediaFiles(dir1);
+        var result = subject.getListOfMediaFiles(dir1);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     public void retrieveFiles_ShouldReturnOneEntry_AndIgnoreInvalidDirectories() throws Exception {
-        Path dir1 = fs.createDirectory(inputDir.resolve("1"));
+        var dir1 = fs.createDirectory(inputDir.resolve("1"));
         fs.createDirectory(inputDir.resolve("inexistent"));
 
-        candidates = subject.retrieveFiles();
+        var candidates = subject.retrieveFiles();
 
         assertThat(candidates).containsKey(dir1);
         assertThat(candidates.get(dir1)).isEmpty();
@@ -109,31 +78,31 @@ public class MediaScanServiceImplTest {
 
     @Test
     public void isPriorityDirectory_ShouldReturnTrue_IfDirectoryIsPositive() throws Exception {
-        Path dir = inputDir.resolve("2");
+        var dir = inputDir.resolve("2");
         assertThat(subject.isPriorityDirectory(dir)).isTrue();
     }
 
     @Test
     public void isPriorityDirectory_ShouldReturnTrue_IfDirectoryIsZero() throws Exception {
-        Path dir = inputDir.resolve("0");
+        var dir = inputDir.resolve("0");
         assertThat(subject.isPriorityDirectory(dir)).isTrue();
     }
 
     @Test
     public void isPriorityDirectory_ShouldReturnFalse_IfDirectoryIsInvalid() throws Exception {
-        Path dir = inputDir.resolve("-1");
+        var dir = inputDir.resolve("-1");
         assertThat(subject.isPriorityDirectory(dir)).isFalse();
     }
 
     @Test
     public void getNumberFromDir_ShouldReturn2_IfPathBeginsWith2() throws Exception {
-        Path dir = inputDir.resolve("2");
+        var dir = inputDir.resolve("2");
         assertThat(subject.getNumberFromDir(dir)).isEqualTo(2);
     }
 
     @Test
     public void getNumberFromDir_ShouldThrowException_IfPathDoesNotContainNumber() throws Exception {
-        Path dir = inputDir.resolve("error");
+        var dir = inputDir.resolve("error");
         assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> subject.getNumberFromDir(dir));
     }
 }

@@ -1,7 +1,10 @@
 package clustercode.scheduling;
 
 import clustercode.api.domain.Profile;
+import clustercode.impl.util.FilesystemProvider;
+import clustercode.main.config.Configuration;
 import clustercode.test.util.FileBasedUnitTest;
+import io.vertx.core.json.JsonObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +24,9 @@ public class ProfileParserImplTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        subject = new ProfileParserImpl();
+        FilesystemProvider.setFileSystem(fs.getFileSystem());
+        subject = new ProfileParserImpl(new ProfileScanConfig(Configuration.createFromDefault()));
+
     }
 
     @Test

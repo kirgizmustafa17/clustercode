@@ -22,6 +22,10 @@ public class FileBasedUnitTest implements TestInstancePostProcessor {
      */
     private FileSystem fs = Jimfs.newFileSystem();
 
+    public FileSystem getFileSystem() {
+        return fs;
+    }
+
     /**
      * Gets the path according to {@link FileSystem#getPath(String, String...)}.
      *
@@ -37,7 +41,7 @@ public class FileBasedUnitTest implements TestInstancePostProcessor {
     /**
      * Creates the file and returns the path. By default any parent directories will be created first.
      *
-     * @param path the desired location of the file.
+     * @param path the desired path of the file.
      * @return path
      * @throws RuntimeException with the original IOException as cause if it failed.
      */

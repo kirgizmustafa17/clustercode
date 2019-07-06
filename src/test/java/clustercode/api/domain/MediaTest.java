@@ -17,7 +17,7 @@ class MediaTest {
 
     @Test
     void isSerializable_ToPlainJson() throws JsonProcessingException {
-        var media = Media.fromPath(Paths.get("base"), Paths.get("relative"), 1);
+        var media = Media.fromPath("base", 1, Paths.get("relative"));
         var mapper = new ObjectMapper();
         var json = mapper.writeValueAsString(media);
         assertThat(json).contains("clustercode://base:1/relative");
@@ -25,7 +25,7 @@ class MediaTest {
 
     @Test
     void isSerializable_ToJsonObject() {
-        var media = Media.fromPath(Paths.get("base"), Paths.get("relative"), 1);
+        var media = Media.fromPath("base", 1, Paths.get("relative"));
         var json = media.toJson();
         assertThat(json.getString("path")).isEqualTo("clustercode://base:1/relative");
     }
@@ -33,26 +33,26 @@ class MediaTest {
     @Test
     void isDeserializable_FromPlainJson() throws IOException {
         var json = new JsonObject()
-                .put("path", "clustercode://base:1/relative");
+            .put("path", "clustercode://base:1/relative");
         var mapper = new ObjectMapper();
         var media = mapper.readValue(json.toString(), Media.class);
         assertThat(media.getPath())
-                .hasHost("base")
-                .hasPort(1)
-                .hasPath("/relative")
-                .hasScheme("clustercode");
+            .hasHost("base")
+            .hasPort(1)
+            .hasPath("/relative")
+            .hasScheme("clustercode");
     }
 
     @Test
     void isDeserializable_FromJsonObject() {
         var json = new JsonObject()
-                .put("path", "clustercode://base:1/relative");
+            .put("path", "clustercode://base:1/relative");
         var media = new Media(json);
         assertThat(media.getPath())
-                .hasHost("base")
-                .hasPort(1)
-                .hasPath("/relative")
-                .hasScheme("clustercode");
+            .hasHost("base")
+            .hasPort(1)
+            .hasPath("/relative")
+            .hasScheme("clustercode");
     }
 
     @Test
@@ -67,19 +67,8 @@ class MediaTest {
     }
 
     @Test
-    void getFullPath_ShouldReturnEmpty_IfNoSource() {
-        assertThat(subject.getFullPath()).isEmpty();
-    }
-
-    @Test
-    void getFullPath_ShouldReturn_FullPathAsPathObject() {
-        subject.setPath(URI.create("clustercode://base:1/movie.mp4"));
-        assertThat(subject.getFullPath()).hasValue(Paths.get("base", "1", "movie.mp4"));
-    }
-
-    @Test
     void getBasePath_ShouldReturnEmpty_IfNoSource() {
-        assertThat(subject.getBasePath()).isEmpty();
+        assertThat(subject.getBase()).isEmpty();
     }
 
     @Test
@@ -91,6 +80,6 @@ class MediaTest {
     void getSubstitutedPath_ShouldReplace_Base_IfSubstituteGiven() {
         subject.setPath(URI.create("clustercode://base:1/movie.mp4"));
         assertThat(subject.getSubstitutedPath(Paths.get("replaced")))
-                .hasValue(Paths.get("replaced", "1", "movie.mp4"));
+            .hasValue(Paths.get("replaced", "1", "movie.mp4"));
     }
 }
