@@ -44,8 +44,8 @@ public class CouchDbServiceImpl implements CouchDbService {
             );
             this.db = new StdCouchDbConnector("clustercode", dbInstance);
             db.createDatabaseIfNotExists();
-        } catch (MalformedURLException e) {
-            log.error("meh", e);
+        } catch (MalformedURLException | DbAccessException e) {
+            log.error(e.getMessage());
         }
     }
 

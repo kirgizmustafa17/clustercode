@@ -1,63 +1,64 @@
 #______________________________________________________________________________
-#### Base Image, to save build time on local dev machine
+#### Builder Image
 ARG ARCH
-FROM multiarch/alpine:${ARCH} as base
+FROM openjdk:11-jdk as builder
 
-ENTRYPOINT ["/bin/bash"]
+WORKDIR /usr/local/src/clustercode
 
-ARG SRC_DIR="/usr/local/src/clustercode"
-ARG TGT_DIR="/opt/clustercode"
+RUN \
+    apt-get update && \
+    apt-get install tree
 
-WORKDIR ${TGT_DIR}
+COPY ["gradle", "./gradle"]
+COPY ["gradlew", "./"]
+
+RUN \
+    # The git versioning pluging requires it, otherwise fails.
+    mkdir .git && \
+    # Download gradle 5
+    ./gradlew
+
+COPY ["build.gradle", "settings.gradle", "./"]
+RUN \
+    # Download dependencies
+    ./gradlew resolveDependencies
+
+COPY .git ./.git
+COPY src ./src
+
+RUN \
+    ./gradlew shadowJar
+
+#______________________________________________________________________________
+#### Runtime Image
+ARG ARCH
+FROM multiarch/alpine:${ARCH} as runtime
+
+ENTRYPOINT ["clustercode"]
+
+EXPOSE \
+    8080/tcp
+
+ARG TGT_DIR="/opt"
+WORKDIR $TGT_DIR
 
 RUN \
     apk update && \
     apk upgrade && \
-    apk add --no-cache openjdk8-jre ffmpeg nano curl bash
+    apk add --no-cache openjdk11-jre ffmpeg nano curl bash
 
-COPY docker/docker-entrypoint.sh ${TGT_DIR}/docker-entrypoint.sh
+COPY docker/clustercode.sh /bin/clustercode
 COPY docker/default ${TGT_DIR}/default/
-
-#______________________________________________________________________________
-#### Builder Image
-FROM braindoctor/clustercode:builder as builder
-
-COPY / .
-
-RUN \
-    sh ./gradlew shadowJar
-
-#______________________________________________________________________________
-#### Runtime Image
-FROM base
-
-ARG SRC_DIR="/usr/local/src/clustercode"
-ARG TGT_DIR="/opt/clustercode"
-
-WORKDIR ${TGT_DIR}
-
-ENV \
-    CC_DEFAULT_DIR="${TGT_DIR}/default" \
-    CC_CONFIG_DIR="${TGT_DIR}/config" \
-    CC_LOG_CONFIG_FILE="default/config/log4j2.xml" \
-    JAVA_ARGS="" \
-    CC_CLUSTER_JGROUPS_BIND_PORT=7600
 
 RUN \
     # Let's create the directories first so we can apply the permissions:
-    mkdir -m 664 /input /output /profiles /var/tmp/clustercode ${CC_CONFIG_DIR}
+    mkdir -m 664 /input /output /profiles /var/tmp/clustercode
 
 VOLUME \
     /input \
     /output \
     /profiles \
-    /var/tmp/clustercode \
-    $CC_CONFIG_DIR
+    /var/tmp/clustercode
 
-EXPOSE \
-    $CC_CLUSTER_JGROUPS_BIND_PORT/tcp \
-    $CC_CLUSTER_JGROUPS_BIND_PORT/udp
-
-CMD ["/opt/clustercode/docker-entrypoint.sh"]
-
-COPY --from=builder ${SRC_DIR}/build/libs/clustercode.jar ${TGT_DIR}/
+COPY --from=builder /usr/local/src/clustercode/build/libs/clustercode.jar ${TGT_DIR}/
+USER 1001

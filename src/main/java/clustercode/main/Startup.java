@@ -48,10 +48,15 @@ public class Startup {
             // override default log properties from ENV if given.
             trySetPropertyFromEnv("CC_LOG_LEVEL", "log.level", cli, LogLevel::valueOf);
             trySetPropertyFromEnv("CC_LOG_FORMAT", "log.format", cli, LogFormat::valueOf);
+            trySetPropertyFromEnv("CC_LOG_CONFIG", "log4j.configurationFile");
 
             // override Log ENVs from CLI if given.
             if (flags.getLogLevel() != null) System.setProperty("log.level", flags.getLogLevel().name());
             if (flags.getLogFormat() != null) System.setProperty("log.format", flags.getLogFormat().name());
+            if (flags.getLogConfig() != null) System.setProperty("log4j.configurationFile", flags
+                .getLogConfig()
+                .toAbsolutePath()
+                .toString());
 
         } catch (CLIException ex) {
             System.err.println(ex.getMessage());
@@ -106,6 +111,13 @@ public class Startup {
             v.deployVerticle(new SchedulingVerticle(), new DeploymentOptions().setConfig(config));
         });
 
+    }
+
+    private static void trySetPropertyFromEnv(
+        String key,
+        String prop) {
+        var value = System.getenv(key);
+        if (value != null) System.setProperty(prop, value);
     }
 
     private static <T extends Enum> void trySetPropertyFromEnv(

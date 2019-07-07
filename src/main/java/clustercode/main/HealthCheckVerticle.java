@@ -7,6 +7,7 @@ import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.ext.healthchecks.HealthCheckHandler;
 import io.vertx.reactivex.ext.web.Router;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
 @Slf4j
 public class HealthCheckVerticle extends AbstractVerticle {
@@ -22,14 +23,16 @@ public class HealthCheckVerticle extends AbstractVerticle {
 
         var hs = HealthCheckHandler.create(vertx);
 
-        log.info("Registering health checks");
+        var readyUri = config().getString(Configuration.api_http_readyUri.key());
+
+        MDC.put("checks", "database");
+        MDC.put("uri", readyUri);
+        log.info("Registering readyness checks");
         hs.register("database", 5000, r -> {
             r.complete(Status.OK());
         });
 
-        var route = config().getString(Configuration.api_http_healthUri.key());
-        log.debug(route);
-        router.route(route).handler(hs);
+        router.route(readyUri).handler(hs);
 
         startFuture.complete();
     }

@@ -14,40 +14,51 @@ import java.nio.file.Path;
 @Getter
 public class AnnotatedCli {
 
-    private Path configFile;
     private boolean help;
+    private Path configFile;
+
+    private Path logConfig;
     private LogLevel logLevel;
     private LogFormat logFormat;
+
     private URI rabbitMqUri;
     private Integer httpPort;
 
+
     @Option(shortName = "c",
-            longName = "config")
+        longName = "config")
     @Description("Config file path in .properties format.")
     @ConvertedBy(PathConverter.class)
     public void setConfigFile(Path configFile) {
         this.configFile = configFile;
     }
 
+    @Option(longName = "log.config")
+    @Description("Log4j2 configuration path. May invalidate other log options.")
+    @ConvertedBy(PathConverter.class)
+    public void setLogConfigfile(Path configFile) {
+        this.logConfig = configFile;
+    }
+
     @Option(shortName = "h",
-            longName = "help",
-            help = true,
-            flag = true)
+        longName = "help",
+        help = true,
+        flag = true)
     @Description("Displays this help and exits.")
     public void setHelp(boolean help) {
         this.help = help;
     }
 
     @Option(shortName = "l",
-            longName = "log.level",
-            choices = {"debug", "info", "warn", "error", "fatal"})
+        longName = "log.level",
+        choices = {"debug", "info", "warn", "error"})
     @Description("Log level")
     public void setLogLevel(LogLevel logLevel) {
         this.logLevel = logLevel;
     }
 
     @Option(longName = "log.format",
-            choices = {"text", "json"})
+        choices = {"text", "json"})
     @Description("Log format")
     public void setLogFormat(LogFormat logLevel) {
         this.logFormat = logLevel;

@@ -16,7 +16,6 @@ import io.reactivex.subjects.Subject;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Inject;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
@@ -33,7 +32,6 @@ public class TranscodingServiceImpl implements TranscodingService {
 
     private boolean cancelRequested;
 
-    @Inject
     TranscodingServiceImpl(TranscoderConfig transcoderConfig) {
         this.transcoderConfig = transcoderConfig;
 

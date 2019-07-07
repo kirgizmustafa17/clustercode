@@ -10,17 +10,16 @@ import lombok.*;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 @DataObject
 @EqualsAndHashCode(callSuper = false)
-@AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
+@ToString(exclude = {"fs"})
 public class Media extends AbstractJsonObject {
 
+    @JsonIgnore
     private FileSystem fs = FilesystemProvider.getInstance();
 
     @Setter(AccessLevel.PACKAGE)
@@ -40,6 +39,7 @@ public class Media extends AbstractJsonObject {
         this.path = constructMediaUri("input", relativePathWithoutPriority, priority);
     }
 
+    @JsonIgnore
     public Media setFileSystem(FileSystem fs) {
         this.fs = fs;
         return this;
@@ -80,7 +80,7 @@ public class Media extends AbstractJsonObject {
     @JsonIgnore
     public Optional<Path> getRelativePath() {
         if (this.path == null) return Optional.empty();
-        return Optional.of(Paths.get(path.getPath().replaceFirst("/*", "")));
+        return Optional.of(fs.getPath(path.getPath().replaceFirst("/*", "")));
     }
 
     @JsonIgnore

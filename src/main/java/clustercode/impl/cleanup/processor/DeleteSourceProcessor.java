@@ -5,7 +5,6 @@ import clustercode.api.cleanup.CleanupProcessor;
 import clustercode.impl.cleanup.CleanupConfig;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,7 +17,6 @@ public class DeleteSourceProcessor implements CleanupProcessor {
 
     private final CleanupConfig cleanupConfig;
 
-    @Inject
     DeleteSourceProcessor(CleanupConfig cleanupConfig) {
         this.cleanupConfig = cleanupConfig;
     }

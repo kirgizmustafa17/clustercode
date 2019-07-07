@@ -9,7 +9,6 @@ import clustercode.impl.util.InvalidConfigurationException;
 import clustercode.impl.util.Platform;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Inject;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -22,7 +21,6 @@ public class ChangeOwnerProcessor implements CleanupProcessor {
     private final ExternalProcessService externalProcessService;
     private boolean enabled;
 
-    @Inject
     ChangeOwnerProcessor(
         CleanupConfig cleanupConfig,
         ExternalProcessService externalProcessService) {

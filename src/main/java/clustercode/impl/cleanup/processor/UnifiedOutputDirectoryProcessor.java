@@ -5,7 +5,6 @@ import clustercode.api.event.messages.TranscodeFinishedEvent;
 import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.impl.util.FileUtil;
 
-import javax.inject.Inject;
 import java.nio.file.Path;
 import java.time.Clock;
 
@@ -13,11 +12,10 @@ import java.time.Clock;
  * Provides a processor which moves the transcode result to a single directory.
  */
 public class UnifiedOutputDirectoryProcessor
-        extends AbstractOutputDirectoryProcessor {
+    extends AbstractOutputDirectoryProcessor {
 
     private final CleanupConfig cleanupConfig;
 
-    @Inject
     UnifiedOutputDirectoryProcessor(CleanupConfig cleanupConfig,
                                     Clock clock) {
         super(clock);

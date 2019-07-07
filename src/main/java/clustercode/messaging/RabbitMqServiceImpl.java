@@ -20,42 +20,41 @@ import java.net.URISyntaxException;
 public class RabbitMqServiceImpl implements RabbitMqService {
 
     private final Vertx vertx;
-    private final RabbitMQClient client;
+    private RabbitMQClient client;
 
     public RabbitMqServiceImpl(Vertx vertx) {
         this.vertx = vertx;
 
         var uriString = config().getString(Configuration.rabbitmq_uri.key());
-        URI uri = null;
         try {
-            uri = new URI(uriString);
+            var uri = new URI(uriString);
             if (uri.getScheme() == null || uri.getHost() == null || uri.getPort() == 0) {
                 logAndExit(null);
             }
+            this.client = RabbitMQClient.create(vertx,
+                new RabbitMQOptions()
+                    .setUri(uri.toString())
+                    .setAutomaticRecoveryEnabled(true));
+
+            client.start(b -> {
+                var strippedUri = uri.getScheme() + "://" + uri.getHost() + ":" + uri.getPort() + uri.getPath();
+                MDC.put("uri", strippedUri);
+                MDC.put("help", "Credentials have been removed from URL in the log.");
+                if (b.succeeded()) {
+                    log.info("Connected to RabbitMq.");
+                    setupQueues();
+                } else {
+                    MDC.put("error", b.cause().getMessage());
+                    log.error("Failed to connect.");
+                }
+                MDC.remove("uri");
+                MDC.remove("help");
+                MDC.remove("error");
+            });
+
         } catch (URISyntaxException e) {
             logAndExit(e);
         }
-
-        this.client = RabbitMQClient.create(vertx,
-            new RabbitMQOptions()
-                .setUri(uri.toString())
-                .setAutomaticRecoveryEnabled(true));
-
-        var strippedUri = uri.getScheme() + "://" + uri.getHost() + ":" + uri.getPort() + uri.getPath();
-        MDC.put("uri", strippedUri);
-        MDC.put("help", "Credentials have been removed from URL in the log.");
-        client.start(b -> {
-            if (b.succeeded()) {
-                log.info("Started?");
-                setupQueues();
-
-            } else {
-                log.error("Failed.");
-            }
-            log.info("{}", MDC.getCopyOfContextMap());
-            MDC.remove("uri");
-            MDC.remove("help");
-        });
 
     }
 

@@ -1,6 +1,4 @@
-.git
 .idea/**/*
-.gradle/*
 
 docs/*
 config/*

@@ -5,7 +5,6 @@ import clustercode.api.event.messages.TranscodeFinishedEvent;
 import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.impl.util.FileUtil;
 
-import javax.inject.Inject;
 import java.nio.file.Path;
 import java.time.Clock;
 
@@ -18,7 +17,6 @@ public class StructuredOutputDirectoryProcessor
 
     private final CleanupConfig cleanupConfig;
 
-    @Inject
     StructuredOutputDirectoryProcessor(CleanupConfig cleanupConfig,
                                        Clock clock) {
         super(clock);

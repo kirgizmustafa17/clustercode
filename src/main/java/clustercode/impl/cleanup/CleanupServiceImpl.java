@@ -7,7 +7,6 @@ import clustercode.api.event.messages.TranscodeFinishedEvent;
 import clustercode.impl.cleanup.processor.CleanupProcessors;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Inject;
 import java.util.Map;
 
 @Slf4j
@@ -15,7 +14,6 @@ public class CleanupServiceImpl implements CleanupService {
 
     private final Map<CleanupProcessors, CleanupProcessor> cleanupProcessorMap;
 
-    @Inject
     CleanupServiceImpl(Map<CleanupProcessors, CleanupProcessor> cleanupProcessorMap) {
         this.cleanupProcessorMap = cleanupProcessorMap;
     }

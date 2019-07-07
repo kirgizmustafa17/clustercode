@@ -3,7 +3,6 @@ package clustercode.impl.cleanup.processor;
 import clustercode.api.cleanup.CleanupContext;
 import clustercode.impl.cleanup.CleanupConfig;
 
-import javax.inject.Inject;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -14,7 +13,6 @@ import java.nio.file.Path;
 public class MarkSourceProcessor
     extends AbstractMarkSourceProcessor {
 
-    @Inject
     MarkSourceProcessor(CleanupConfig cleanupConfig) {
         super(cleanupConfig);
     }

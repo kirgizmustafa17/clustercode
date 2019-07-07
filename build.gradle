@@ -51,10 +51,6 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:1.18.+"
     testCompileOnly "org.projectlombok:lombok:1.18.+"
 
-    compile "com.google.inject.extensions:guice-multibindings:${guiceVersion}"
-    compile "javax.inject:javax.inject:1"
-    compile "org.aeonbits.owner:owner:1.0.10"
-
     // Couchdb
     compile "org.ektorp:org.ektorp:1.+"
 
@@ -101,7 +97,9 @@ sourceSets {
 
 shadowJar {
     manifest {
-        attributes "Main-Class": "clustercode.main.Startup", "Implementation-Version": version, "Multi-Release": true
+        attributes "Main-Class": "clustercode.main.Startup", 
+                "Implementation-Version": (version == null ? "unknown" : version), 
+                "Multi-Release": true
     }
     baseName = "clustercode"
     classifier = null

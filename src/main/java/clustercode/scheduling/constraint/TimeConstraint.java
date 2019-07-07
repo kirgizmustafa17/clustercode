@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
-import javax.inject.Inject;
 import java.time.Clock;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -25,7 +24,6 @@ public class TimeConstraint extends AbstractConstraint {
     private LocalTime stop;
     private LocalTime begin;
 
-    @Inject
     protected TimeConstraint(String timeBegin,
                              String timeStop,
                              Clock clock) {
@@ -35,7 +33,7 @@ public class TimeConstraint extends AbstractConstraint {
             this.stop = LocalTime.parse(timeStop, formatter);
         } catch (DateTimeParseException ex) {
             throw new InvalidConfigurationException("The time format is HH:mm. You specified: begin({}), stop({})", ex,
-                    timeBegin, timeStop);
+                timeBegin, timeStop);
         }
         checkConfiguration();
     }
@@ -43,7 +41,7 @@ public class TimeConstraint extends AbstractConstraint {
     private void checkConfiguration() {
         if (begin.compareTo(stop) == 0) {
             throw new InvalidConfigurationException("Begin and stop time are identical (specify different times in " +
-                    "HH:mm format).");
+                "HH:mm format).");
         }
     }
 
@@ -54,7 +52,7 @@ public class TimeConstraint extends AbstractConstraint {
             return logAndReturn(begin.isBefore(now) && now.isBefore(stop), now);
         } else {
             return logAndReturn((
-                    now.isAfter(begin) && now.isAfter(stop)) || (now.isBefore(stop) && now.isBefore(begin)), now);
+                now.isAfter(begin) && now.isAfter(stop)) || (now.isBefore(stop) && now.isBefore(begin)), now);
         }
     }
 
