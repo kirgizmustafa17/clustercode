@@ -1,6 +1,7 @@
 package clustercode.api.domain;
 
 import io.vertx.core.json.JsonObject;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -8,6 +9,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled
 class TaskCompletedEventTest {
 
     @Test

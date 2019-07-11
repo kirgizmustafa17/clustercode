@@ -23,7 +23,7 @@ public class HealthCheckVerticle extends AbstractVerticle {
 
         var hs = HealthCheckHandler.create(vertx);
 
-        var readyUri = config().getString(Configuration.api_http_readyUri.key());
+        var readyUri = config().getString(Configuration.api_http_readynessUri.key());
 
         MDC.put("checks", "database");
         MDC.put("uri", readyUri);

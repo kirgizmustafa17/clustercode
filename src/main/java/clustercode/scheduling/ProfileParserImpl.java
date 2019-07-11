@@ -30,22 +30,20 @@ public class ProfileParserImpl implements ProfileParser {
         try {
             log.debug("Parsing profile.");
             List<String> lines = Files
-                    .lines(path)
-                    .map(String::trim)
-                    .filter(this::isNotCommentLine)
-                    .collect(Collectors.toList());
+                .lines(path)
+                .map(String::trim)
+                .filter(this::isNotCommentLine)
+                .collect(Collectors.toList());
             return Optional.of(
-                    Profile.builder()
-                            .arguments(lines.stream()
-                                    .filter(this::isNotFieldLine)
-                                    .collect(Collectors.toList()))
-                            .fields(lines.stream()
-                                    .filter(this::isFieldLine)
-                                    .collect(Collectors.toMap(this::extractKey, this::extractValue)))
-                            .path(Profile.constructProfileURI(
-                                config.profile_base_dir(),
-                                path))
-                            .build());
+                Profile.builder()
+                    .arguments(lines.stream()
+                        .filter(this::isNotFieldLine)
+                        .collect(Collectors.toList()))
+                    .fields(lines.stream()
+                        .filter(this::isFieldLine)
+                        .collect(Collectors.toMap(this::extractKey, this::extractValue)))
+                    .path(Profile.constructProfileURI(config.profile_base_dir().relativize(path)))
+                    .build());
         } catch (IOException e) {
             MDC.put("error", e.getMessage());
             log.warn("Could not parse file.");

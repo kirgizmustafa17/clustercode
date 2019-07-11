@@ -6,7 +6,7 @@
       <env name="CC_CLEANUP_MARK_SOURCE_DIR" value="input/done" />
       <env name="CC_PROFILE_DIR" value="profiles" />
       <env name="CC_RABBITMQ_URL" value="amqp://guest:guest@localhost:5672" />
-      <env name="CC_CONSTRAINT_ACTIVE" value="FILE_SIZE" />
+      <env name="CC_CONSTRAINT_ACTIVE" value="NONE" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="clustercode.main.Startup" />
     <module name="clustercode.main" />

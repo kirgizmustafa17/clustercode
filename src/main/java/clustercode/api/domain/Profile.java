@@ -26,7 +26,9 @@ import java.util.stream.Collectors;
 @DataObject
 public class Profile extends AbstractJsonObject {
 
-    private static FileSystem fs = FilesystemProvider.getInstance();
+    @JsonIgnore
+    @Setter(AccessLevel.PACKAGE)
+    private FileSystem fs = FilesystemProvider.getInstance();
 
     /**
      * The path of the profile file.
@@ -60,14 +62,14 @@ public class Profile extends AbstractJsonObject {
     }
 
     @SneakyThrows
-    public static Profile fromPath(Path baseDir, Path relativePath) {
+    public static Profile fromPath(Path relativePath) {
         var profile = new Profile();
-        profile.setPath(constructProfileURI(baseDir, relativePath));
+        profile.setPath(constructProfileURI(relativePath));
         return profile;
     }
 
     @SneakyThrows
-    public static URI constructProfileURI(Path baseDir, Path relativePath) {
+    public static URI constructProfileURI(Path relativePath) {
         return new URI(
             "clustercode",
             "profile",

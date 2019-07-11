@@ -1,5 +1,0 @@
-rabbitmq:
-  url: "using it?"
-
-http:
-  port: 8081

@@ -3,11 +3,9 @@ package clustercode.main.config;
 import io.vertx.core.json.JsonObject;
 import lombok.SneakyThrows;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,8 +20,8 @@ public enum Configuration {
     rabbitmq_channels_task_completed_qos_prefetchCount,
 
     api_http_port,
-    api_http_readyUri,
-    api_http_healthUri,
+    api_http_readynessUri,
+    api_http_livenessUri,
 
     input_dir,
     output_dir,
@@ -64,8 +62,8 @@ public enum Configuration {
             .put(rabbitmq_channels_task_completed_qos_prefetchCount.key(), 1)
 
             .put(api_http_port.key(), 8080)
-            .put(api_http_readyUri.key(), "/health/ready")
-            .put(api_http_healthUri.key(), "/health/live")
+            .put(api_http_readynessUri.key(), "/health/ready")
+            .put(api_http_livenessUri.key(), "/health/live")
 
             .put(input_dir.key(), "/input")
             .put(output_dir.key(), "/output")

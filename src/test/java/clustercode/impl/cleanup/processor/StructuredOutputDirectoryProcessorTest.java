@@ -7,6 +7,7 @@ import clustercode.impl.cleanup.CleanupConfig;
 import clustercode.test.util.ClockBasedUnitTest;
 import clustercode.test.util.FileBasedUnitTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@Disabled
 public class StructuredOutputDirectoryProcessorTest {
 
     private StructuredOutputDirectoryProcessor subject;
