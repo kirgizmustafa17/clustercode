@@ -19,6 +19,9 @@ public enum Configuration {
     rabbitmq_channels_task_completed_queue_durable,
     rabbitmq_channels_task_completed_qos_prefetchCount,
 
+    couchdb_url,
+    couchdb_database,
+
     api_http_port,
     api_http_readynessUri,
     api_http_livenessUri,
@@ -60,6 +63,8 @@ public enum Configuration {
             .put(rabbitmq_channels_task_completed_queue_queueName.key(), "task-completed")
             .put(rabbitmq_channels_task_completed_queue_durable.key(), true)
             .put(rabbitmq_channels_task_completed_qos_prefetchCount.key(), 1)
+
+            .put(couchdb_url.key(), "http://admin:password@couchdb:5984")
 
             .put(api_http_port.key(), 8080)
             .put(api_http_readynessUri.key(), "/health/ready")
@@ -109,6 +114,10 @@ public enum Configuration {
         return new JsonObjectBuilder(new JsonObject())
             .addStringProperty(rabbitmq_uri.key(), cli.getRabbitMqUri())
             .addIntProperty(api_http_port.key(), cli.getHttpPort())
+            .addStringProperty(couchdb_url.key(), cli.getCouchDbUri())
+            .addStringProperty(input_dir.key(), cli.getInputDir())
+            .addStringProperty(output_dir.key(), cli.getOutputDir())
+            .addStringProperty(profile_dir.key(), cli.getProfileDir())
             .build();
     }
 

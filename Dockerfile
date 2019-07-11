@@ -60,5 +60,8 @@ VOLUME \
     /profiles \
     /var/tmp/clustercode
 
+ENV \
+    JVM_ARGS="-XX:MaxRAMPercentage=70"
+
 COPY --from=builder /usr/local/src/clustercode/build/libs/clustercode.jar ${TGT_DIR}/
 USER 1001

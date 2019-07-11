@@ -28,6 +28,7 @@ public class Profile extends AbstractJsonObject {
 
     @JsonIgnore
     @Setter(AccessLevel.PACKAGE)
+    @Builder.Default
     private FileSystem fs = FilesystemProvider.getInstance();
 
     /**

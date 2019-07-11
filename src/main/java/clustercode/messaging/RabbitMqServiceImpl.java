@@ -1,6 +1,7 @@
 package clustercode.messaging;
 
 import clustercode.api.domain.TaskAddedEvent;
+import clustercode.impl.util.UriUtil;
 import clustercode.main.config.Configuration;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -37,7 +38,7 @@ public class RabbitMqServiceImpl implements RabbitMqService {
                     .setAutomaticRecoveryEnabled(true));
 
             client.start(b -> {
-                var strippedUri = uri.getScheme() + "://" + uri.getHost() + ":" + uri.getPort() + uri.getPath();
+                var strippedUri = UriUtil.stripCredentialFromUri(uri);
                 MDC.put("uri", strippedUri);
                 MDC.put("help", "Credentials have been removed from URL in the log.");
                 if (b.succeeded()) {

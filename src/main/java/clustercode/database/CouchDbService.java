@@ -1,5 +1,7 @@
 package clustercode.database;
 
+import clustercode.api.domain.Media;
+import clustercode.api.domain.Profile;
 import clustercode.api.domain.TaskAddedEvent;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -21,7 +23,7 @@ public interface CouchDbService {
     }
 
     @Fluent
-    CouchDbService createNewJob(Handler<AsyncResult<String>> resultHandler);
+    CouchDbService createNewJob(Media media, Profile profile, Handler<AsyncResult<String>> resultHandler);
 
     @Fluent
     CouchDbService save(TaskAddedEvent event, Handler<AsyncResult<Void>> resultHandler);

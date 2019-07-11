@@ -1,11 +1,13 @@
 package clustercode.main;
 
 import clustercode.database.CouchDbVerticle;
+import clustercode.impl.util.PackagingUtil;
 import clustercode.main.config.AnnotatedCli;
 import clustercode.main.config.Configuration;
 import clustercode.main.config.converter.LogFormat;
 import clustercode.main.config.converter.LogLevel;
 import clustercode.scheduling.SchedulingVerticle;
+import clustercode.transcoding.TranscodingVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
@@ -22,12 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.jar.Manifest;
 
 public class Startup {
 
@@ -109,6 +108,7 @@ public class Startup {
             v.deployVerticle(new HttpVerticle(), new DeploymentOptions().setConfig(config));
             v.deployVerticle(new CouchDbVerticle(), new DeploymentOptions().setConfig(config));
             v.deployVerticle(new SchedulingVerticle(), new DeploymentOptions().setConfig(config));
+            v.deployVerticle(new TranscodingVerticle(), new DeploymentOptions().setConfig(config));
         });
 
     }
@@ -141,17 +141,8 @@ public class Startup {
         System.exit(1);
     }
 
-    public static Optional<String> getApplicationVersion() {
-        InputStream stream = ClassLoader.getSystemResourceAsStream("META-INF/MANIFEST.MF");
-        try {
-            return Optional.ofNullable(
-                new Manifest(stream)
-                    .getMainAttributes()
-                    .getValue("Implementation-Version"));
-        } catch (IOException | NullPointerException e) {
-            log.error("", e);
-        }
-        return Optional.empty();
+    private static Optional<String> getApplicationVersion() {
+        return PackagingUtil.getManifestAttribute("Implementation-Version");
     }
 
 }

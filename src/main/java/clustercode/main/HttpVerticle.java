@@ -38,17 +38,7 @@ public class HttpVerticle extends AbstractVerticle {
         var dbService = CouchDbService.createProxy(vertx.getDelegate(), CouchDbService.SERVICE_ADDRESS);
         var messagingService = RabbitMqService.create(vertx);
         router.errorHandler(500, ex -> log.error("Unhandled router exception:", ex.failure()));
-        router
-                .route("/create")
-                .handler(r -> {
-                    dbService.createNewJob(result -> {
-                        if (result.succeeded()) {
-                            r.response().end(result.result());
-                        } else {
-                            r.response().end(result.cause().getMessage());
-                        }
-                    });
-                });
+
         router
                 .route("/message")
                 .handler(r -> {

@@ -22,7 +22,11 @@ public class AnnotatedCli {
     private LogFormat logFormat;
 
     private URI rabbitMqUri;
+    private URI couchDbUri;
     private Integer httpPort;
+    private Path inputDir;
+    private Path outputDir;
+    private Path profileDir;
 
 
     @Option(shortName = "c",
@@ -66,9 +70,15 @@ public class AnnotatedCli {
 
 
     @Option(longName = "rabbitmq.uri")
-    @Description("Expects a full amqp URL in the format 'amqp://host:port/'")
+    @Description("Expects a full amqp URL in the format 'amqp://user:password@host:port/'")
     public void setRabbitMqUri(URI rabbitMqUri) {
         this.rabbitMqUri = rabbitMqUri;
+    }
+
+    @Option(longName = "couchdb.uri")
+    @Description("Expects a full http URL in the format 'http://user:password@host:port/'")
+    public void setCouchDbUri(URI couchDbUri) {
+        this.couchDbUri = couchDbUri;
     }
 
     @Option(longName = "api.http.port")
@@ -76,4 +86,26 @@ public class AnnotatedCli {
     public void setHttpPort(Integer httpPort) {
         this.httpPort = httpPort;
     }
+
+    @Option(shortName = "i", longName = "input.dir")
+    @Description("Base input directory path.")
+    @ConvertedBy(PathConverter.class)
+    public void setInputDir(Path dir) {
+        this.inputDir = dir;
+    }
+
+    @Option(shortName = "o", longName = "output.dir")
+    @Description("Base output directory path.")
+    @ConvertedBy(PathConverter.class)
+    public void setOutputDir(Path dir) {
+        this.outputDir = dir;
+    }
+
+    @Option(shortName = "p", longName = "profile.dir")
+    @Description("Base profiles directory path.")
+    @ConvertedBy(PathConverter.class)
+    public void setProfileDir(Path dir) {
+        this.profileDir = dir;
+    }
+
 }
