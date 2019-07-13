@@ -61,6 +61,7 @@ public class SchedulingVerticle extends AbstractVerticle {
         log.debug("Verticle started.");
         startFuture.complete();
 
+        Thread.sleep(2000);
         vertx.eventBus().sender(SchedulingMessageHandler.MEDIA_SCAN_START).send(true);
     }
 

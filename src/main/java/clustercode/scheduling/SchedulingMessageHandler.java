@@ -145,7 +145,7 @@ public class SchedulingMessageHandler {
                 })
                 .subscribe(
                     p -> {
-                        MDC.put("profile", p.getPath().toString());
+                        MDC.put("profile", p.toString());
                         MDC.put("media", msg.getMedia().toString());
                         log.info("Profile selected.");
                         eb

@@ -7,7 +7,6 @@ import clustercode.messaging.RabbitMqService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.*;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -22,92 +21,98 @@ import java.util.UUID;
 
 @Slf4j
 public class HttpVerticle extends AbstractVerticle {
+
+    private final Router router;
+
+    public HttpVerticle(Router router) {
+
+        this.router = router;
+    }
+
     @Override
     public void start(Future<Void> startFuture) throws Exception {
 
-        var router = Router.router(vertx);
         router
-                .route("/")
-                .handler(r -> r
-                        .response()
-                        .end("Hello from vertx"));
+            .route("/")
+            .handler(r -> r
+                .response()
+                .end("Hello from vertx"));
         router
-                .route(config().getString(Configuration.prometheus_uri.key()))
-                .handler(PrometheusScrapingHandler.create());
+            .route(config().getString(Configuration.prometheus_uri.key()))
+            .handler(PrometheusScrapingHandler.create());
 
         var dbService = CouchDbService.createProxy(vertx.getDelegate(), CouchDbService.SERVICE_ADDRESS);
         var messagingService = RabbitMqService.create(vertx);
         router.errorHandler(500, ex -> log.error("Unhandled router exception:", ex.failure()));
 
         router
-                .route("/message")
-                .handler(r -> {
+            .route("/message")
+            .handler(r -> {
 
-                    dbService.get(result -> {
-                        if (result.succeeded()) {
+                dbService.get(result -> {
+                    if (result.succeeded()) {
 
-                            addTask(dbService, r, result.result().getJobId());
-                            messagingService.sendTaskAdded(
-                                    result.result(),
-                                    handler -> {
-                                        if (handler.succeeded()) {
-                                            r.response().end("success");
-                                        } else {
-                                            log.error("failed to send message over rabbitmq: ", handler.cause());
-                                            r.response().end("failed to send message");
-                                        }
-                                    }
-                            );
+                        addTask(dbService, r, result.result().getJobId());
+                        messagingService.sendTaskAdded(
+                            result.result(),
+                            handler -> {
+                                if (handler.succeeded()) {
+                                    r.response().end("success");
+                                } else {
+                                    log.error("failed to send message over rabbitmq: ", handler.cause());
+                                    r.response().end("failed to send message");
+                                }
+                            }
+                        );
 
-                            r.response().end(result.result().toJson().toString());
-                        } else {
-                            log.error("Failed to get from database:", result.cause());
-                            r.response().end("get failed");
-                        }
-                    });
-
+                        r.response().end(result.result().toJson().toString());
+                    } else {
+                        log.error("Failed to get from database:", result.cause());
+                        r.response().end("get failed");
+                    }
                 });
+
+            });
 
         router
-                .route("/get")
-                .handler(r -> {
-                    dbService.get(result -> {
-                        if (result.succeeded()) {
-                            r.response().end(result.result().toJson().toString());
-                        } else {
-                            log.error("Failed to get:", result.cause());
-                            r.response().end("get failed");
-                        }
-                    });
+            .route("/get")
+            .handler(r -> {
+                dbService.get(result -> {
+                    if (result.succeeded()) {
+                        r.response().end(result.result().toJson().toString());
+                    } else {
+                        log.error("Failed to get:", result.cause());
+                        r.response().end("get failed");
+                    }
                 });
+            });
 
         vertx
-                .createHttpServer()
-                .requestHandler(router)
-                .rxListen(config().getInteger(Configuration.api_http_port.key()))
-                .doAfterTerminate(MDC::clear)
-                .doAfterSuccess(server -> {
-                    MeterRegistry registry = BackendRegistries.getDefaultNow();
-                    new DiskSpaceMetrics(new File("/")).bindTo(registry);
-                    new DiskSpaceMetrics(new File("/tmp/")).bindTo(registry);
-                    new ClassLoaderMetrics().bindTo(registry);
-                    new JvmMemoryMetrics().bindTo(registry);
-                    new JvmGcMetrics().bindTo(registry);
-                    new ProcessorMetrics().bindTo(registry);
-                    new JvmThreadMetrics().bindTo(registry);
-
-                    vertx.deployVerticle(
-                            new HealthCheckVerticle(router), new DeploymentOptions().setConfig(config()));
-                })
-                .subscribe(s -> {
-                            MDC.put("port", String.valueOf(s.actualPort()));
-                            log.info("Server started.");
-                            startFuture.complete();
-                        },
-                        ex -> {
-                            log.error("Could not start http server: ", ex);
-                            startFuture.fail(ex);
-                        });
+            .createHttpServer()
+            .requestHandler(router)
+            .rxListen(config().getInteger(Configuration.api_http_port.key()))
+            .doAfterTerminate(MDC::clear)
+            .doAfterSuccess(server -> {
+                MeterRegistry registry = BackendRegistries.getDefaultNow();
+                new DiskSpaceMetrics(new File(config().getString(Configuration.output_tempDir.key()))).bindTo(registry);
+                new ClassLoaderMetrics().bindTo(registry);
+                new JvmMemoryMetrics().bindTo(registry);
+                new JvmGcMetrics().bindTo(registry);
+                new ProcessorMetrics().bindTo(registry);
+                new JvmThreadMetrics().bindTo(registry);
+            })
+            .subscribe(s -> {
+                    MDC.put("port", String.valueOf(s.actualPort()));
+                    log.info("Server started.");
+                    startFuture.complete();
+                    MDC.remove("port");
+                },
+                ex -> {
+                    MDC.put("error", ex.toString());
+                    log.error("Could not start http server.");
+                    startFuture.fail(ex);
+                    MDC.remove("error");
+                });
 
     }
 

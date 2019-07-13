@@ -8,10 +8,13 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.eventbus.EventBus;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class TranscodingMessageHandler {
 
     private final Vertx vertx;
@@ -32,13 +35,18 @@ public class TranscodingMessageHandler {
         this.handlers.add(profileSelectedConsumer.handler(this::onProfileSelected));
 
 
-
     }
 
+    @SneakyThrows
     private void onProfileSelected(Message<JsonObject> payload) {
         var msg = payload.body().mapTo(ProfileSelectedMessage.class);
+//        Thread.sleep(1000);
         dbService.createNewJob(msg.getMedia(), msg.getProfile(), handler -> {
-
+            if (handler.succeeded()) {
+                log.info("succeeded");
+            } else {
+                log.error("failed", handler.cause());
+            }
         });
     }
 

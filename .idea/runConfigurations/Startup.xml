@@ -5,12 +5,13 @@
       <env name="CC_OUTPUT_DIR" value="output" />
       <env name="CC_CLEANUP_MARK_SOURCE_DIR" value="input/done" />
       <env name="CC_PROFILE_DIR" value="profiles" />
-      <env name="CC_RABBITMQ_URL" value="amqp://guest:guest@localhost:5672" />
+      <env name="CC_RABBITMQ_URI" value="amqp://guest:guest@localhost:5672" />
       <env name="CC_CONSTRAINT_ACTIVE" value="NONE" />
+      <env name="CC_COUCHDB_URI" value="http://admin:password@localhost:5984/clustercode" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="clustercode.main.Startup" />
     <module name="clustercode.main" />
-    <option name="PROGRAM_PARAMETERS" value="-c testing/file.asdf -l debug --api.http.port 8081" />
+    <option name="PROGRAM_PARAMETERS" value="-l debug --api.http.port 8081" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="clustercode.main.config.*" />

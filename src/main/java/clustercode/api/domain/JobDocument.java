@@ -40,6 +40,9 @@ public class JobDocument {
     @JsonProperty("source_media")
     private Media media;
 
+    @JsonProperty("profile")
+    private Profile profile;
+
     @JsonIgnore
     public UUID getIdAsUuid() {
         if (this.id == null) return null;

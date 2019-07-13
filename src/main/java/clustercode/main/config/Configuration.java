@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,11 +20,10 @@ public enum Configuration {
     rabbitmq_channels_task_completed_queue_durable,
     rabbitmq_channels_task_completed_qos_prefetchCount,
 
-    couchdb_url,
-    couchdb_database,
+    couchdb_uri,
 
     api_http_port,
-    api_http_readynessUri,
+    api_http_readinessUri,
     api_http_livenessUri,
 
     input_dir,
@@ -64,10 +64,10 @@ public enum Configuration {
             .put(rabbitmq_channels_task_completed_queue_durable.key(), true)
             .put(rabbitmq_channels_task_completed_qos_prefetchCount.key(), 1)
 
-            .put(couchdb_url.key(), "http://admin:password@couchdb:5984")
+            .put(couchdb_uri.key(), "http://admin:password@couchdb:5984/clustercode")
 
             .put(api_http_port.key(), 8080)
-            .put(api_http_readynessUri.key(), "/health/ready")
+            .put(api_http_readinessUri.key(), "/health/ready")
             .put(api_http_livenessUri.key(), "/health/live")
 
             .put(input_dir.key(), "/input")
@@ -101,7 +101,7 @@ public enum Configuration {
             .collect(Collectors.toMap(Function.identity(), c -> "CC_" + c.name().toUpperCase(Locale.ENGLISH)))
             .entrySet()
             .stream()
-            .filter(e -> map.get(e.getValue()) != null)
+            .filter(k -> map.containsKey(k.getValue()))
             .forEach(e -> {
                 var value = map.get(e.getValue());
                 json.put(e.getKey().key(), value);
@@ -114,11 +114,22 @@ public enum Configuration {
         return new JsonObjectBuilder(new JsonObject())
             .addStringProperty(rabbitmq_uri.key(), cli.getRabbitMqUri())
             .addIntProperty(api_http_port.key(), cli.getHttpPort())
-            .addStringProperty(couchdb_url.key(), cli.getCouchDbUri())
+            .addStringProperty(couchdb_uri.key(), cli.getCouchDbUri())
             .addStringProperty(input_dir.key(), cli.getInputDir())
             .addStringProperty(output_dir.key(), cli.getOutputDir())
             .addStringProperty(profile_dir.key(), cli.getProfileDir())
             .build();
+    }
+
+    public static JsonObject createFromProperties(Properties props) {
+        var json = new JsonObject();
+        Arrays
+            .stream(Configuration.values())
+            .map(Configuration::key)
+            .filter(props::containsKey)
+            .collect(Collectors.toMap(Function.identity(), props::getProperty))
+            .forEach(json::put);
+        return json;
     }
 
 }

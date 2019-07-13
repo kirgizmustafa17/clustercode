@@ -16,7 +16,7 @@ import java.util.Optional;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @Data
-@ToString(exclude = {"fs"})
+@ToString(exclude = {"fs", "fileHash"})
 public class Media extends AbstractJsonObject {
 
     @JsonIgnore

@@ -9,7 +9,7 @@ import lombok.Getter;
 import java.net.URI;
 import java.nio.file.Path;
 
-@Name("master")
+@Name("clustercode")
 @Summary("Backend API and scheduler for clustercode.")
 @Getter
 public class AnnotatedCli {
@@ -68,7 +68,6 @@ public class AnnotatedCli {
         this.logFormat = logLevel;
     }
 
-
     @Option(longName = "rabbitmq.uri")
     @Description("Expects a full amqp URL in the format 'amqp://user:password@host:port/'")
     public void setRabbitMqUri(URI rabbitMqUri) {
@@ -76,7 +75,7 @@ public class AnnotatedCli {
     }
 
     @Option(longName = "couchdb.uri")
-    @Description("Expects a full http URL in the format 'http://user:password@host:port/'")
+    @Description("Expects a full http URL in the format 'http://user:password@host:port/db-name'")
     public void setCouchDbUri(URI couchDbUri) {
         this.couchDbUri = couchDbUri;
     }

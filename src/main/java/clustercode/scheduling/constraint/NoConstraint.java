@@ -9,7 +9,7 @@ public class NoConstraint extends AbstractConstraint {
 
     @Override
     public boolean accept(Media candidate) {
-        return logAndReturnResult(true);
+        return true;
     }
 
     @Override

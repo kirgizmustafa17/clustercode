@@ -1,5 +1,6 @@
 package clustercode.database;
 
+import clustercode.api.HealthCheckable;
 import clustercode.api.domain.JobDocument;
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
@@ -28,10 +29,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
-public class CouchDbServiceImpl implements CouchDbService {
+public class CouchDbServiceImpl implements CouchDbService, HealthCheckable {
 
     private final Vertx vertx;
     private final CircuitBreaker breaker;
+    private boolean connected = false;
     private StdCouchDbConnector db;
 
     CouchDbServiceImpl(Vertx vertx) {
@@ -46,7 +48,7 @@ public class CouchDbServiceImpl implements CouchDbService {
         );
 
         try {
-            var uri = new URI(config().getString(Configuration.couchdb_url.key()));
+            var uri = new URI(config().getString(Configuration.couchdb_uri.key()));
             var strippedUri = UriUtil.stripCredentialFromUri(uri);
             var databaseName = Optional.ofNullable(uri.getPath()).orElse("");
             MDC.put("uri", strippedUri);
@@ -57,6 +59,7 @@ public class CouchDbServiceImpl implements CouchDbService {
             this.db = new StdCouchDbConnector(databaseName, dbInstance);
             db.createDatabaseIfNotExists();
             log.info("Connected.");
+            this.connected = true;
         } catch (MalformedURLException | URISyntaxException | IllegalArgumentException e) {
             MDC.put("error", e.toString());
             log.error("Cannot connect to CouchDB, exiting...");
@@ -89,17 +92,20 @@ public class CouchDbServiceImpl implements CouchDbService {
                                 .id(newId.toString())
                                 .creationTime(LocalDateTime.now().toString())
                                 .media(media)
+                                .profile(profile)
                                 .build());
                         future.complete(newId.toString());
                     } catch (DbAccessException ex) {
                         future.fail(ex);
+                        this.connected = false;
+                    } finally {
+                        MDC.remove("job_id");
                     }
                 },
                 ex -> "")
-            .doFinally(MDC::clear)
             .subscribe(
                 uuid -> {
-                    log.info("Created job");
+                    log.info("Created job in database.");
                     resultHandler.handle(Future.succeededFuture(uuid));
                 },
                 ex -> {
@@ -146,5 +152,11 @@ public class CouchDbServiceImpl implements CouchDbService {
             MDC.clear();
         }
         return this;
+    }
+
+    @Override
+    public JsonObject checkLiveness() throws Exception {
+        if (connected) return new JsonObject().put("connected", connected);
+        else throw new Exception("Database not connected");
     }
 }

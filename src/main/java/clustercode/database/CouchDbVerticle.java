@@ -1,30 +1,36 @@
 package clustercode.database;
 
+import clustercode.healthcheck.AbstractHealthcheckableVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.serviceproxy.ServiceBinder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class CouchDbVerticle extends AbstractVerticle {
+@Slf4j
+public class CouchDbVerticle extends AbstractHealthcheckableVerticle {
 
     private ServiceBinder binder;
     private List<MessageConsumer<JsonObject>> messageConsumers = new ArrayList<>();
+    private CouchDbServiceImpl service;
 
     @Override
-    public void start(Future<Void> startFuture) throws Exception {
+    public void start() throws Exception {
 
-        var service = new CouchDbServiceImpl(vertx.getDelegate());
+        this.service = new CouchDbServiceImpl(vertx.getDelegate());
         this.binder = new ServiceBinder(vertx.getDelegate());
 
         messageConsumers.add(this.binder
             .setAddress(CouchDbService.SERVICE_ADDRESS)
             .register(CouchDbService.class, service));
 
-        startFuture.complete();
+        registerLivenessChecks(Collections.singletonMap("database", service));
+        registerReadinessChecks(Collections.singletonMap("database", service));
+        log.info("Started.");
     }
 
     @Override
@@ -32,4 +38,5 @@ public class CouchDbVerticle extends AbstractVerticle {
         this.messageConsumers.forEach(binder::unregister);
         stopFuture.complete();
     }
+
 }
