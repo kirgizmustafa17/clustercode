@@ -6,6 +6,7 @@ import clustercode.main.config.Configuration;
 import clustercode.scheduling.messages.MediaScannedMessage;
 import clustercode.scheduling.messages.MediaSelectedMessage;
 import clustercode.scheduling.messages.ProfileSelectedMessage;
+import clustercode.transcoding.TranscodingService;
 import io.reactivex.Maybe;
 import io.reactivex.disposables.Disposable;
 import io.vertx.core.json.JsonObject;
@@ -148,14 +149,9 @@ public class SchedulingMessageHandler {
                         MDC.put("profile", p.toString());
                         MDC.put("media", msg.getMedia().toString());
                         log.info("Profile selected.");
-                        eb
-                            .sender(PROFILE_SELECT_COMPLETE)
-                            .send(ProfileSelectedMessage
-                                .builder()
-                                .media(msg.getMedia())
-                                .profile(p)
-                                .build()
-                                .toJson());
+                        TranscodingService
+                            .createProxy(vertx.getDelegate())
+                            .startNewJob(msg.getMedia(), p);
                     },
                     ex -> {
                         log.info(ex.getMessage());

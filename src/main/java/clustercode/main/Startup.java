@@ -1,11 +1,13 @@
 package clustercode.main;
 
 import clustercode.database.CouchDbVerticle;
+import clustercode.healthcheck.HealthCheckVerticle;
 import clustercode.impl.util.PackagingUtil;
 import clustercode.main.config.AnnotatedCli;
 import clustercode.main.config.Configuration;
 import clustercode.main.config.converter.LogFormat;
 import clustercode.main.config.converter.LogLevel;
+import clustercode.messaging.RabbitMqVerticle;
 import clustercode.scheduling.SchedulingVerticle;
 import clustercode.transcoding.TranscodingVerticle;
 import io.vertx.config.ConfigRetrieverOptions;
@@ -122,14 +124,28 @@ public class Startup {
 
             v.exceptionHandler(ex -> log.error("Unhandled Vertx exception:", ex));
             var healthCheckVerticle = new HealthCheckVerticle(router);
-            v.deployVerticle(new HttpVerticle(router), new DeploymentOptions().setConfig(config));
-            v.deployVerticle(healthCheckVerticle, new DeploymentOptions().setConfig(config));
+            v.deployVerticle(
+                new HttpVerticle(router),
+                new DeploymentOptions().setConfig(config));
+            v.deployVerticle(
+                healthCheckVerticle,
+                new DeploymentOptions().setConfig(config));
             v.deployVerticle(
                 new CouchDbVerticle()
-                    .withLivenessChecks(healthCheckVerticle::registerLivenesschecks),
+                    .withLivenessChecks(healthCheckVerticle::registerLivenesschecks)
+                    .withReadinessChecks(healthCheckVerticle::registerReadinessChecks),
                 new DeploymentOptions().setConfig(config));
-            v.deployVerticle(new TranscodingVerticle(), new DeploymentOptions().setConfig(config));
-            v.deployVerticle(new SchedulingVerticle(), new DeploymentOptions().setConfig(config));
+            v.deployVerticle(
+                new RabbitMqVerticle()
+                    .withLivenessChecks(healthCheckVerticle::registerLivenesschecks)
+                    .withReadinessChecks(healthCheckVerticle::registerReadinessChecks),
+                new DeploymentOptions().setConfig(config));
+            v.deployVerticle(
+                new TranscodingVerticle(),
+                new DeploymentOptions().setConfig(config));
+            v.deployVerticle(
+                new SchedulingVerticle(),
+                new DeploymentOptions().setConfig(config));
         });
 
     }

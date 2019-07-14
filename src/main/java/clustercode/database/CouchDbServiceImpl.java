@@ -1,10 +1,12 @@
 package clustercode.database;
 
-import clustercode.api.HealthCheckable;
+import clustercode.healthcheck.HealthCheckException;
+import clustercode.healthcheck.HealthCheckable;
 import clustercode.api.domain.JobDocument;
 import clustercode.api.domain.Media;
 import clustercode.api.domain.Profile;
 import clustercode.api.domain.TaskAddedEvent;
+import clustercode.impl.util.LoggingEventBuilder;
 import clustercode.impl.util.UriUtil;
 import clustercode.main.config.Configuration;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
@@ -84,7 +86,7 @@ public class CouchDbServiceImpl implements CouchDbService, HealthCheckable {
             .rxExecuteCommandWithFallback(
                 future -> {
                     var newId = UUID.randomUUID();
-                    MDC.put("job_id", newId.toString());
+                    var logEvent = LoggingEventBuilder.createFrom(log).addKeyValue("job_id", newId);
                     try {
                         this.db
                             .create(JobDocument
@@ -95,22 +97,17 @@ public class CouchDbServiceImpl implements CouchDbService, HealthCheckable {
                                 .profile(profile)
                                 .build());
                         future.complete(newId.toString());
+                        logEvent.atInfo().log("Created job in database.");
+                        this.connected = true;
                     } catch (DbAccessException ex) {
                         future.fail(ex);
                         this.connected = false;
-                    } finally {
-                        MDC.remove("job_id");
                     }
                 },
-                ex -> "")
+                ex -> "???")
             .subscribe(
-                uuid -> {
-                    log.info("Created job in database.");
-                    resultHandler.handle(Future.succeededFuture(uuid));
-                },
-                ex -> {
-                    resultHandler.handle(Future.failedFuture(ex));
-                }
+                uuid -> resultHandler.handle(Future.succeededFuture(uuid)),
+                ex -> resultHandler.handle(Future.failedFuture(ex))
             );
         return this;
     }
@@ -155,8 +152,14 @@ public class CouchDbServiceImpl implements CouchDbService, HealthCheckable {
     }
 
     @Override
-    public JsonObject checkLiveness() throws Exception {
-        if (connected) return new JsonObject().put("connected", connected);
-        else throw new Exception("Database not connected");
+    public JsonObject checkLiveness() throws HealthCheckException {
+        var json = new JsonObject().put("connected", connected);
+        if (connected) return json;
+        else throw new HealthCheckException(json);
+    }
+
+    @Override
+    public JsonObject checkReadiness() throws HealthCheckException {
+        return new JsonObject().put("circuit_breaker", breaker.state().name());
     }
 }

@@ -38,7 +38,7 @@ public class DefaultProfileMatcher implements ProfileMatcher {
                 return parser.parseFile(profileFile);
             } else {
                 log.warn("Default profile file does not exist. This may result in jobs not being scheduled." +
-                        "Either fix the configuration or create a default profile.");
+                        "Either fix the configuration or createFrom a default profile.");
                 return Optional.empty();
             }
         } finally {

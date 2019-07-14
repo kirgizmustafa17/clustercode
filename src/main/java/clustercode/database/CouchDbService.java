@@ -20,8 +20,8 @@ public interface CouchDbService {
         return new CouchDbServiceImpl(vertx);
     }
 
-    static CouchDbService createProxy(Vertx vertx, String address) {
-        return new CouchDbServiceVertxEBProxy(vertx, address);
+    static CouchDbService createProxy(Vertx vertx) {
+        return new CouchDbServiceVertxEBProxy(vertx, SERVICE_ADDRESS);
     }
 
     @Fluent

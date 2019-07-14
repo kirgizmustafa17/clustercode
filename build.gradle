@@ -106,12 +106,6 @@ shadowJar {
     version = null
 }
 
-task downloadDependenciesCustom(type: Exec) {
-    configurations.testRuntime.files
-    //commandLine "echo", "Downloaded all dependencies"
-    //commandLine "print", "Downloaded all dependencies"
-}
-
 task resolveDependencies {
     doLast {
         project.rootProject.allprojects.each { subProject ->

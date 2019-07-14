@@ -41,8 +41,8 @@ public class HttpVerticle extends AbstractVerticle {
             .route(config().getString(Configuration.prometheus_uri.key()))
             .handler(PrometheusScrapingHandler.create());
 
-        var dbService = CouchDbService.createProxy(vertx.getDelegate(), CouchDbService.SERVICE_ADDRESS);
-        var messagingService = RabbitMqService.create(vertx);
+        var dbService = CouchDbService.createProxy(vertx.getDelegate());
+        var messagingService = RabbitMqService.create(vertx.getDelegate());
         router.errorHandler(500, ex -> log.error("Unhandled router exception:", ex.failure()));
 
         router
